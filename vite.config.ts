@@ -17,6 +17,21 @@ export default defineConfig({
     },
   },
 
+  build: {
+    // Raise limit so the schemes data JSON doesn't abort the build
+    chunkSizeWarningLimit: 5000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split schemes data into its own chunk
+          'schemes-data': ['./src/res/schemes.json'],
+          // Keep react in its own vendor chunk
+          'vendor-react': ['react', 'react-dom', 'react-router'],
+        },
+      },
+    },
+  },
+
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 

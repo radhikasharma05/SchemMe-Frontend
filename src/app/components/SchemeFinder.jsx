@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import schemesData from '../../res/schemes.json';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const TOTAL_STEPS = 6;
-const TEAL = 'linear-gradient(135deg,#2E9F75,#10B981)';
-const NAVY = '#0B2545';
+const TOTAL_STEPS  = 6;
+const PAGE_SIZE    = 12;
+const TEAL         = 'linear-gradient(135deg,#2E9F75,#10B981)';
+const NAVY         = '#0B2545';
 
 const INDIAN_STATES = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
@@ -22,17 +24,18 @@ const SOCIAL_CATEGORIES = [
   { val:'ST',      full:'Scheduled Tribe (ST)' },
   { val:'PVTG',    full:'Particularly Vulnerable Tribal Groups (PVTG)' },
   { val:'DNT',     full:'De-notified, Nomadic & Semi-Nomadic Tribes (DNT)' },
+  { val:'EWS',     full:'Economically Weaker Section (EWS)' },
 ];
 
 const OCCUPATION_ROLES = [
-  { val:'Farmer',              icon:'🌾' },
-  { val:'Student',             icon:'🎓' },
-  { val:'Government Employee', icon:'🏛️' },
-  { val:'Private Employee',    icon:'💼' },
-  { val:'Daily Wage Worker',   icon:'🔨' },
-  { val:'Unemployed',          icon:'🔍' },
-  { val:'Defence Personnel',   icon:'🪖' },
-  { val:'Self Employed',       icon:'🏪' },
+  { val:'Farmer',              icon:'🌾', tag:'farmer' },
+  { val:'Student',             icon:'🎓', tag:'education' },
+  { val:'Government Employee', icon:'🏛️', tag:'government' },
+  { val:'Private Employee',    icon:'💼', tag:'private' },
+  { val:'Daily Wage Worker',   icon:'🔨', tag:'labour' },
+  { val:'Unemployed',          icon:'🔍', tag:'unemployed' },
+  { val:'Defence Personnel',   icon:'🪖', tag:'defence' },
+  { val:'Self Employed',       icon:'🏪', tag:'entrepreneur' },
 ];
 
 const INCOME_OPTIONS = ['Below ₹1L','₹1L – ₹3L','₹3L – ₹5L','₹5L – ₹10L','Above ₹10L'];
@@ -46,156 +49,106 @@ const STEP_META = [
   { label:'Financial Info',  icon:'💰' },
 ];
 
-// ─── Master schemes list ──────────────────────────────────────────────────────
-const SCHEMES = [
-  {
-    id:1, name:'Beti Bachao Beti Padhao',
-    description:'Promotes survival, protection and education of the girl child across India.',
-    gender:['Female'], ageGroups:['Below 18','18 – 25'],
-    maritalStatus:['Unmarried'], schemeCategory:'Women',
-    socialCategories:['General','OBC','SC','ST'],
-    areas:['Urban','Rural'], roles:['Student'],
-    bpl: false, eligibilityTags:['Female','Below 25','Unmarried'],
-  },
-  {
-    id:2, name:'PM Kisan Samman Nidhi',
-    description:'₹6,000/year direct income support for small & marginal farmers.',
-    gender:['Male','Female','Transgender'], ageGroups:['26 – 35','36 – 45','46 – 60','Above 60'],
-    maritalStatus:['Married','Widowed'], schemeCategory:'Farmer',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Rural'], roles:['Farmer'],
-    bpl: false, eligibilityTags:['All Genders','26+','Farmer'],
-  },
-  {
-    id:3, name:'Ayushman Bharat Yojana',
-    description:'Health insurance coverage up to ₹5 Lakhs per family per year.',
-    gender:['Male','Female','Transgender'], ageGroups:['26 – 35','36 – 45','46 – 60','Above 60'],
-    maritalStatus:['Married','Widowed','Divorced','Separated'], schemeCategory:'Health',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Farmer','Daily Wage Worker','Unemployed','Self Employed'],
-    bpl: true, eligibilityTags:['All Genders','26+','BPL'],
-  },
-  {
-    id:4, name:'Post-Matric Scholarship SC/ST',
-    description:'Financial assistance for SC/ST students pursuing higher education.',
-    gender:['Male','Female','Transgender'], ageGroups:['18 – 25'],
-    maritalStatus:['Unmarried','Married'], schemeCategory:'Education',
-    socialCategories:['SC','ST'],
-    areas:['Urban','Rural'], roles:['Student'],
-    bpl: false, eligibilityTags:['SC/ST','18–25','Student'],
-  },
-  {
-    id:5, name:'PM Awas Yojana (Urban)',
-    description:'Subsidised housing loan interest for economically weaker sections.',
-    gender:['Male','Female','Transgender'], ageGroups:['26 – 35','36 – 45','46 – 60'],
-    maritalStatus:['Married','Unmarried','Widowed'], schemeCategory:'Housing',
-    socialCategories:['General','OBC','SC','ST'],
-    areas:['Urban'], roles:['Private Employee','Government Employee','Self Employed','Daily Wage Worker'],
-    bpl: false, eligibilityTags:['All Genders','26–60','Urban'],
-  },
-  {
-    id:6, name:'Pradhan Mantri Mudra Yojana',
-    description:'Micro-loans up to ₹10 Lakhs for small business & self-employment.',
-    gender:['Male','Female','Transgender'], ageGroups:['18 – 25','26 – 35','36 – 45'],
-    maritalStatus:['Married','Unmarried','Divorced'], schemeCategory:'Employment',
-    socialCategories:['General','OBC','SC','ST','DNT'],
-    areas:['Urban','Rural'], roles:['Self Employed','Daily Wage Worker','Unemployed'],
-    bpl: false, eligibilityTags:['All Genders','18–45','Entrepreneurship'],
-  },
-  {
-    id:7, name:'Sukanya Samriddhi Yojana',
-    description:'High-interest savings scheme for the girl child up to age 10.',
-    gender:['Female'], ageGroups:['Below 18'],
-    maritalStatus:['Unmarried'], schemeCategory:'Women',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Student'],
-    bpl: false, eligibilityTags:['Female','Below 10','Savings'],
-  },
-  {
-    id:8, name:'National Old Age Pension Scheme',
-    description:'Monthly pension for BPL elderly citizens above 60 years.',
-    gender:['Male','Female','Transgender'], ageGroups:['Above 60'],
-    maritalStatus:['Married','Widowed','Divorced','Separated','Unmarried'], schemeCategory:'Pension',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Unemployed','Farmer','Daily Wage Worker'],
-    bpl: true, eligibilityTags:['All Genders','60+','BPL'],
-  },
-  {
-    id:9, name:'Skill India – PMKVY',
-    description:'Free skill training & certification for unemployed youth across India.',
-    gender:['Male','Female','Transgender'], ageGroups:['18 – 25','26 – 35'],
-    maritalStatus:['Unmarried','Married','Divorced'], schemeCategory:'Employment',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Unemployed','Student','Daily Wage Worker'],
-    bpl: false, eligibilityTags:['All Genders','18–35','Youth'],
-  },
-  {
-    id:10, name:'Stand Up India',
-    description:'Bank loans ₹10L–₹1Cr for SC/ST and women entrepreneurs.',
-    gender:['Female'], ageGroups:['18 – 25','26 – 35','36 – 45'],
-    maritalStatus:['Married','Unmarried','Divorced','Widowed'], schemeCategory:'Women',
-    socialCategories:['SC','ST'],
-    areas:['Urban','Rural'], roles:['Self Employed','Unemployed'],
-    bpl: false, eligibilityTags:['Female/SC/ST','18–45','Business'],
-  },
-  {
-    id:11, name:'Rashtriya Swasthya Bima Yojana',
-    description:'Health insurance for BPL families with cashless hospitalization.',
-    gender:['Male','Female','Transgender'], ageGroups:['36 – 45','46 – 60','Above 60'],
-    maritalStatus:['Married','Widowed'], schemeCategory:'Health',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Farmer','Daily Wage Worker','Unemployed'],
-    bpl: true, eligibilityTags:['All Genders','36+','BPL Family'],
-  },
-  {
-    id:12, name:'National Scholarship Portal',
-    description:'Central portal for merit & means-based scholarships for all categories.',
-    gender:['Male','Female','Transgender'], ageGroups:['Below 18','18 – 25'],
-    maritalStatus:['Unmarried'], schemeCategory:'Education',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Student'],
-    bpl: false, eligibilityTags:['All Genders','Student','Merit-based'],
-  },
-  {
-    id:13, name:'PM Ujjwala Yojana',
-    description:'Free LPG connections to women from BPL households.',
-    gender:['Female'], ageGroups:['26 – 35','36 – 45','46 – 60'],
-    maritalStatus:['Married','Widowed'], schemeCategory:'Women',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Rural','Urban'], roles:['Farmer','Daily Wage Worker','Unemployed'],
-    bpl: true, eligibilityTags:['Female','BPL','Free LPG'],
-  },
-  {
-    id:14, name:'Pradhan Mantri Jan Dhan Yojana',
-    description:'Zero-balance bank account with RuPay debit card & ₹2L accident cover.',
-    gender:['Male','Female','Transgender'], ageGroups:['18 – 25','26 – 35','36 – 45','46 – 60','Above 60'],
-    maritalStatus:['Married','Unmarried','Widowed','Divorced','Separated'], schemeCategory:'Finance',
-    socialCategories:['General','OBC','SC','ST','PVTG','DNT'],
-    areas:['Urban','Rural'], roles:['Farmer','Student','Daily Wage Worker','Unemployed','Self Employed'],
-    bpl: false, eligibilityTags:['All Genders','All Ages','Banking'],
-  },
-  {
-    id:15, name:'Atal Pension Yojana',
-    description:'Guaranteed ₹1,000–₹5,000/month pension for unorganised sector workers.',
-    gender:['Male','Female','Transgender'], ageGroups:['18 – 25','26 – 35','36 – 45'],
-    maritalStatus:['Married','Unmarried'], schemeCategory:'Pension',
-    socialCategories:['General','OBC','SC','ST'],
-    areas:['Urban','Rural'], roles:['Farmer','Daily Wage Worker','Self Employed'],
-    bpl: false, eligibilityTags:['All Genders','18–40','Unorganised Sector'],
-  },
-];
-
 // ─── Category display config ──────────────────────────────────────────────────
 const SCHEME_CAT_CFG = {
-  Women:      { bg:'rgba(236,72,153,0.12)',  text:'#db2777', icon:'👩', grad:'from-pink-500 to-rose-500' },
-  Farmer:     { bg:'rgba(16,185,129,0.12)',  text:'#059669', icon:'🌾', grad:'from-emerald-500 to-green-600' },
-  Health:     { bg:'rgba(59,130,246,0.12)',  text:'#2563eb', icon:'🏥', grad:'from-blue-500 to-indigo-600' },
-  Education:  { bg:'rgba(245,158,11,0.12)',  text:'#d97706', icon:'🎓', grad:'from-amber-500 to-orange-500' },
-  Housing:    { bg:'rgba(99,102,241,0.12)',  text:'#4f46e5', icon:'🏠', grad:'from-indigo-500 to-purple-600' },
-  Employment: { bg:'rgba(20,184,166,0.12)',  text:'#0d9488', icon:'💼', grad:'from-teal-500 to-cyan-600' },
-  Pension:    { bg:'rgba(239,68,68,0.12)',   text:'#dc2626', icon:'🏦', grad:'from-red-500 to-rose-600' },
-  Finance:    { bg:'rgba(16,185,129,0.12)',  text:'#059669', icon:'💳', grad:'from-green-500 to-emerald-600' },
+  Education:      { bg:'rgba(245,158,11,0.12)',  text:'#d97706', icon:'🎓', grad:'from-amber-500 to-orange-500' },
+  Health:         { bg:'rgba(59,130,246,0.12)',  text:'#2563eb', icon:'🏥', grad:'from-blue-500 to-indigo-600' },
+  Women:          { bg:'rgba(236,72,153,0.12)',  text:'#db2777', icon:'👩', grad:'from-pink-500 to-rose-500' },
+  'Social Welfare':{ bg:'rgba(139,92,246,0.12)', text:'#7c3aed', icon:'🤝', grad:'from-violet-500 to-purple-600' },
+  Agriculture:    { bg:'rgba(16,185,129,0.12)',  text:'#059669', icon:'🌾', grad:'from-emerald-500 to-green-600' },
+  Business:       { bg:'rgba(20,184,166,0.12)',  text:'#0d9488', icon:'💼', grad:'from-teal-500 to-cyan-600' },
+  Finance:        { bg:'rgba(16,185,129,0.12)',  text:'#059669', icon:'💳', grad:'from-green-500 to-emerald-600' },
+  Employment:     { bg:'rgba(14,165,233,0.12)',  text:'#0284c7', icon:'🛠️', grad:'from-sky-500 to-blue-600' },
+  Housing:        { bg:'rgba(99,102,241,0.12)',  text:'#4f46e5', icon:'🏠', grad:'from-indigo-500 to-purple-600' },
+  Transport:      { bg:'rgba(249,115,22,0.12)',  text:'#ea580c', icon:'🚌', grad:'from-orange-500 to-red-500' },
+  Utility:        { bg:'rgba(6,182,212,0.12)',   text:'#0891b2', icon:'💧', grad:'from-cyan-500 to-teal-600' },
+  'Science & Tech':{ bg:'rgba(59,130,246,0.12)',  text:'#1d4ed8', icon:'🔬', grad:'from-blue-600 to-indigo-700' },
+  'Sports & Culture':{ bg:'rgba(239,68,68,0.12)', text:'#dc2626', icon:'🏅', grad:'from-red-500 to-rose-600' },
+  Legal:          { bg:'rgba(107,114,128,0.12)', text:'#374151', icon:'⚖️', grad:'from-gray-500 to-gray-600' },
+  Other:          { bg:'rgba(11,37,69,0.08)',    text:'#0B2545', icon:'📋', grad:'from-gray-400 to-gray-500' },
 };
+
+// ─── Tag → Filter mapping helpers ─────────────────────────────────────────────
+// Age range tags in CSV: age<18, age18-35, age18-60, age22-31, age15-31, age18-45, etc.
+// Form age groups: 'Below 18','18 – 25','26 – 35','36 – 45','46 – 60','Above 60'
+
+function ageGroupMatchesTags(ageGroup, tags) {
+  if (!ageGroup) return true;
+  const ageTags = tags.filter(t => t.startsWith('age'));
+  if (ageTags.length === 0) return true; // no age restriction → open to all
+
+  // Map form age group to a representative age
+  const repAge = {
+    'Below 18': 15,
+    '18 – 25':  22,
+    '26 – 35':  30,
+    '36 – 45':  40,
+    '46 – 60':  52,
+    'Above 60': 65,
+  }[ageGroup];
+
+  if (!repAge) return true;
+
+  return ageTags.some(tag => {
+    // age<18 or age>60
+    const ltMatch = tag.match(/^age<(\d+)$/);
+    const gtMatch = tag.match(/^age>(\d+)$/);
+    const rangeMatch = tag.match(/^age(\d+)-(\d+)$/);
+    if (ltMatch)    return repAge < parseInt(ltMatch[1]);
+    if (gtMatch)    return repAge > parseInt(gtMatch[1]);
+    if (rangeMatch) return repAge >= parseInt(rangeMatch[1]) && repAge <= parseInt(rangeMatch[2]);
+    return false;
+  });
+}
+
+function socialCatMatchesTags(socCat, tags) {
+  if (!socCat) return true;
+  const catMap = {
+    'General': ['general', 'ews'],
+    'OBC':     ['obc'],
+    'SC':      ['sc'],
+    'ST':      ['st'],
+    'PVTG':    ['st', 'pvtg'],
+    'DNT':     ['dnt', 'obc'],
+    'EWS':     ['ews', 'general'],
+  };
+  const allowed = catMap[socCat] || [];
+  // If no social-category tags exist on the scheme, it's open to all
+  const catTags = tags.filter(t => ['sc','st','obc','general','ews','pvtg','dnt'].includes(t));
+  if (catTags.length === 0) return true;
+  return allowed.some(c => catTags.includes(c));
+}
+
+function areaMatchesTags(area, tags) {
+  if (!area) return true;
+  const hasRural = tags.includes('rural');
+  const hasUrban = tags.includes('urban');
+  if (!hasRural && !hasUrban) return true; // no area restriction
+  if (area === 'Rural') return hasRural;
+  if (area === 'Urban') return hasUrban;
+  return true;
+}
+
+function occupationMatchesTags(role, tags) {
+  if (!role) return true;
+  const occ = OCCUPATION_ROLES.find(r => r.val === role);
+  if (!occ) return true;
+  const occTags = tags.filter(t =>
+    ['farmer','education','entrepreneur','labour','government','defence','private','unemployed'].includes(t)
+  );
+  if (occTags.length === 0) return true;
+  return occTags.includes(occ.tag);
+}
+
+function stateMatchesTags(state, scheme) {
+  if (!state) return true;
+  // Central schemes are available everywhere
+  if (scheme.level === 'Central') return true;
+  // State scheme: stateName must match selected state
+  const sn = (scheme.stateName || '').toLowerCase();
+  const st = state.toLowerCase();
+  return sn.includes(st) || st.includes(sn);
+}
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
@@ -220,6 +173,9 @@ const CSS = `
   .sf-show-btn:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(46,159,117,0.45) !important }
   .sf-next-btn:hover { background:rgba(46,159,117,0.08) !important; transform:translateY(-1px) }
   .sf-back-btn:hover { border-color:#2E9F75 !important; color:#2E9F75 !important }
+  .sf-search:focus { outline:none; border-color:#2E9F75 !important; box-shadow:0 0 0 3px rgba(46,159,117,0.15) }
+  .sf-pg-btn:hover:not(:disabled) { background:rgba(46,159,117,0.12) !important; border-color:#2E9F75 !important; color:#2E9F75 !important }
+  .sf-pg-btn:disabled { opacity:0.38; cursor:not-allowed }
 `;
 
 // ─── Reusable atoms ───────────────────────────────────────────────────────────
@@ -327,7 +283,6 @@ function StepActions({ step, onBack, onNext, onShow }) {
           ← Back
         </button>
       )}
-      {/* Always present: Show Schemes */}
       <button onClick={onShow}
         className="sf-show-btn font-['DM_Sans'] font-bold text-sm text-white px-7 py-2.5 rounded-full focus:outline-none transition-all duration-200"
         style={{ background: TEAL, boxShadow:'0 4px 16px rgba(46,159,117,0.30)' }}>
@@ -344,11 +299,147 @@ function StepActions({ step, onBack, onNext, onShow }) {
   );
 }
 
+// ─── Scheme Card ──────────────────────────────────────────────────────────────
+function SchemeCard({ s, idx }) {
+  const [hov, setHov] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const cfg = SCHEME_CAT_CFG[s.category] || SCHEME_CAT_CFG['Other'];
+
+  return (
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      className="sf-card flex flex-col rounded-3xl overflow-hidden border sf-cards-in"
+      style={{
+        animationDelay:`${Math.min(idx, 11) * 0.05}s`,
+        background:'rgba(255,255,255,0.74)',
+        backdropFilter:'blur(16px)',
+        WebkitBackdropFilter:'blur(16px)',
+        border: hov ? '1.5px solid rgba(46,159,117,0.35)' : '1.5px solid rgba(11,37,69,0.08)',
+        boxShadow: hov ? '0 16px 40px rgba(11,37,69,0.14)' : '0 2px 16px rgba(11,37,69,0.07)',
+      }}>
+      <div className={`h-1.5 w-full bg-gradient-to-r ${cfg.grad}`} />
+      <div className="flex flex-col gap-3 p-5 sm:p-6 flex-1">
+        {/* Category + Level badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 font-['DM_Sans'] text-xs font-bold px-3 py-1.5 rounded-full"
+            style={{ background: cfg.bg, color: cfg.text }}>
+            {cfg.icon} {s.category}
+          </span>
+          <span className="inline-flex items-center font-['DM_Sans'] text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{
+              background: s.level === 'Central' ? 'rgba(59,130,246,0.10)' : 'rgba(139,92,246,0.10)',
+              color: s.level === 'Central' ? '#2563eb' : '#7c3aed',
+            }}>
+            {s.level === 'Central' ? '🏛️ Central' : `📍 ${s.stateName || 'State'}`}
+          </span>
+        </div>
+
+        <h3 className="font-['Playfair_Display'] text-base sm:text-lg font-bold leading-snug" style={{ color:'#0B2545' }}>
+          {s.name}
+        </h3>
+
+        <p className="font-['DM_Sans'] text-sm leading-relaxed flex-1" style={{ color:'rgba(17,24,39,0.60)' }}>
+          {expanded ? s.description : (s.description?.slice(0, 140) + (s.description?.length > 140 ? '…' : ''))}
+        </p>
+
+        {s.benefits && (
+          <div className="rounded-xl p-3" style={{ background:'rgba(46,159,117,0.06)', border:'1px solid rgba(46,159,117,0.15)' }}>
+            <div className="font-['DM_Sans'] text-xs font-bold mb-1" style={{ color:'#2E9F75' }}>💰 Benefits</div>
+            <div className="font-['DM_Sans'] text-xs" style={{ color:NAVY }}>
+              {s.benefits.slice(0, 160)}{s.benefits.length > 160 ? '…' : ''}
+            </div>
+          </div>
+        )}
+
+        {/* Tags */}
+        {s.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {s.tags.slice(0, 5).map(t => (
+              <span key={t} className="font-['DM_Sans'] text-xs font-semibold px-2.5 py-1 rounded-full"
+                style={{ background:'rgba(46,159,117,0.10)', color:'#2E9F75' }}>{t}</span>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={() => setExpanded(e => !e)}
+          className="sf-know mt-1 font-['DM_Sans'] font-bold text-sm py-2.5 rounded-xl border-2 w-full focus:outline-none transition-all duration-200"
+          style={{ borderColor:'#2E9F75', color:'#2E9F75', background:'transparent' }}>
+          {expanded ? 'Show Less ↑' : 'Know More →'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+function Pagination({ page, total, pageSize, onChange }) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) return null;
+
+  const pageNums = [];
+  const delta = 2;
+  for (let i = Math.max(1, page - delta); i <= Math.min(totalPages, page + delta); i++) {
+    pageNums.push(i);
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+      <button
+        onClick={() => onChange(page - 1)}
+        disabled={page === 1}
+        className="sf-pg-btn font-['DM_Sans'] font-bold text-sm px-4 py-2 rounded-full border-2 transition-all"
+        style={{ borderColor:'rgba(11,37,69,0.12)', color:NAVY, background:'rgba(255,255,255,0.85)' }}>
+        ← Prev
+      </button>
+
+      {pageNums[0] > 1 && (
+        <>
+          <button onClick={() => onChange(1)}
+            className="sf-pg-btn font-['DM_Sans'] font-bold text-sm w-9 h-9 rounded-full border-2 transition-all"
+            style={{ borderColor:'rgba(11,37,69,0.12)', color:NAVY, background:'rgba(255,255,255,0.85)' }}>1</button>
+          {pageNums[0] > 2 && <span className="font-['DM_Sans'] text-sm" style={{color:NAVY}}>…</span>}
+        </>
+      )}
+
+      {pageNums.map(n => (
+        <button key={n} onClick={() => onChange(n)}
+          className="sf-pg-btn font-['DM_Sans'] font-bold text-sm w-9 h-9 rounded-full border-2 transition-all"
+          style={{
+            borderColor: n === page ? '#2E9F75' : 'rgba(11,37,69,0.12)',
+            background: n === page ? TEAL : 'rgba(255,255,255,0.85)',
+            color: n === page ? '#fff' : NAVY,
+          }}>
+          {n}
+        </button>
+      ))}
+
+      {pageNums[pageNums.length - 1] < totalPages && (
+        <>
+          {pageNums[pageNums.length - 1] < totalPages - 1 && <span className="font-['DM_Sans'] text-sm" style={{color:NAVY}}>…</span>}
+          <button onClick={() => onChange(totalPages)}
+            className="sf-pg-btn font-['DM_Sans'] font-bold text-sm w-9 h-9 rounded-full border-2 transition-all"
+            style={{ borderColor:'rgba(11,37,69,0.12)', color:NAVY, background:'rgba(255,255,255,0.85)' }}>{totalPages}</button>
+        </>
+      )}
+
+      <button
+        onClick={() => onChange(page + 1)}
+        disabled={page === totalPages}
+        className="sf-pg-btn font-['DM_Sans'] font-bold text-sm px-4 py-2 rounded-full border-2 transition-all"
+        style={{ borderColor:'rgba(11,37,69,0.12)', color:NAVY, background:'rgba(255,255,255,0.85)' }}>
+        Next →
+      </button>
+    </div>
+  );
+}
+
 // ═════════════════════════════════ MAIN ══════════════════════════════════════
 export default function SchemeFinder() {
   const [formOpen, setFormOpen] = useState(false);
   const [step,     setStep]     = useState(1);
   const [ctaHover, setCtaHover] = useState(false);
+  const [page,     setPage]     = useState(1);
+  const [search,   setSearch]   = useState('');
   const formRef    = useRef(null);
   const resultsRef = useRef(null);
 
@@ -383,33 +474,55 @@ export default function SchemeFinder() {
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }), 120);
   }, [showResults]);
 
-  // ── Live filtered results (recalculate every time any filter changes) ────────
-  const filteredSchemes = useMemo(() => {
-    return SCHEMES.filter(s =>
-      (!gender  || s.gender.includes(gender))             &&
-      (!age     || s.ageGroups.includes(age))              &&
-      (!marital || s.maritalStatus.includes(marital))      &&
-      (!area    || s.areas?.includes(area))                &&
-      (!socCat  || s.socialCategories?.includes(socCat))   &&
-      (!role    || s.roles?.includes(role))                &&
-      (isBpl === null || s.bpl === isBpl)
-    );
-  }, [gender, age, marital, area, socCat, role, isBpl]);
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [gender, age, marital, state, area, socCat, role, isBpl, search]);
 
-  // Count active filters for display
-  const activeFilterCount = [gender, age, marital, area, socCat, role]
+  // ── Live filtered results ────────────────────────────────────────────────────
+  const filteredSchemes = useMemo(() => {
+    let results = schemesData;
+
+    // Text search
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      results = results.filter(s =>
+        s.name?.toLowerCase().includes(q) ||
+        s.description?.toLowerCase().includes(q) ||
+        s.benefits?.toLowerCase().includes(q) ||
+        s.tags?.some(t => t.includes(q))
+      );
+    }
+
+    // Tag-based filtering
+    results = results.filter(s => {
+      const tags = s.tags || [];
+      return (
+        ageGroupMatchesTags(age, tags)        &&
+        socialCatMatchesTags(socCat, tags)    &&
+        areaMatchesTags(area, tags)           &&
+        occupationMatchesTags(role, tags)     &&
+        stateMatchesTags(state, s)
+      );
+    });
+
+    return results;
+  }, [gender, age, marital, state, area, socCat, role, isBpl, search]);
+
+  const paginatedSchemes = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredSchemes.slice(start, start + PAGE_SIZE);
+  }, [filteredSchemes, page]);
+
+  const activeFilterCount = [gender, age, marital, area, socCat, role, state]
     .filter(Boolean).length + (isBpl !== null ? 1 : 0);
 
-  const handleShowSchemes = () => {
-    setShowResults(true);
-  };
+  const handleShowSchemes = () => { setShowResults(true); setPage(1); };
 
   const handleReset = () => {
     setGender(''); setAge(''); setMarital('');
     setState(''); setArea(''); setSocCat('');
     setIsPwd(null); setIsMinor(null); setRole('');
-    setIsBpl(null); setIncome('');
-    setShowResults(false); setStep(1);
+    setIsBpl(null); setIncome(''); setSearch('');
+    setShowResults(false); setStep(1); setPage(1);
   };
 
   const next = () => setStep(s => Math.min(s + 1, TOTAL_STEPS));
@@ -433,7 +546,7 @@ export default function SchemeFinder() {
         <div className="text-center mb-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-4 py-1.5 rounded-full"
             style={{ background:'rgba(46,159,117,0.12)', color:'#2E9F75' }}>
-            Smart Eligibility Filter · {TOTAL_STEPS} Steps
+            Smart Eligibility Filter · {TOTAL_STEPS} Steps · {schemesData.length.toLocaleString()} Schemes
           </span>
           <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold mb-3" style={{ color: NAVY }}>
             Find the Right Scheme,{' '}
@@ -442,7 +555,7 @@ export default function SchemeFinder() {
             </span>
           </h2>
           <p className="font-['DM_Sans'] text-[#111827]/60 text-base max-w-xl mx-auto">
-            Fill any number of filters — hit <strong style={{ color:'#2E9F75' }}>Show Me Schemes</strong> at any step to see live results.
+            Fill any number of filters — hit <strong style={{ color:'#2E9F75' }}>Show Me Schemes</strong> at any step to see live results from {schemesData.length.toLocaleString()} real government schemes.
           </p>
         </div>
 
@@ -756,10 +869,9 @@ export default function SchemeFinder() {
                 Schemes For You
               </h2>
               <p className="font-['DM_Sans'] text-sm" style={{ color:'rgba(17,24,39,0.60)' }}>
-                {activeFilterCount > 0
-                  ? <>Showing <strong style={{ color:'#2E9F75' }}>{filteredSchemes.length}</strong> of {SCHEMES.length} schemes
-                      {' '}matching <strong style={{ color:'#2E9F75' }}>{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}</strong></>
-                  : <>Showing <strong style={{ color:'#2E9F75' }}>all {SCHEMES.length}</strong> schemes — no filters applied</>
+                {activeFilterCount > 0 || search
+                  ? <>Showing <strong style={{ color:'#2E9F75' }}>{filteredSchemes.length.toLocaleString()}</strong> of {schemesData.length.toLocaleString()} schemes</>
+                  : <>Showing all <strong style={{ color:'#2E9F75' }}>{schemesData.length.toLocaleString()}</strong> schemes — refine with filters above</>
                 }
               </p>
             </div>
@@ -779,6 +891,28 @@ export default function SchemeFinder() {
             </div>
           </div>
 
+          {/* Search bar */}
+          <div className="relative mb-6">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔍</span>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by scheme name, benefit, or keyword…"
+              className="sf-search w-full font-['DM_Sans'] text-sm rounded-2xl pl-11 pr-4 py-3.5 border-2 transition-all"
+              style={{
+                borderColor: 'rgba(11,37,69,0.10)',
+                background: 'rgba(255,255,255,0.90)',
+                color: NAVY,
+              }}
+            />
+            {search && (
+              <button onClick={() => setSearch('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold"
+                style={{ color:'rgba(11,37,69,0.40)' }}>✕</button>
+            )}
+          </div>
+
           {/* Active filter pills */}
           {activeFilterCount > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
@@ -786,6 +920,7 @@ export default function SchemeFinder() {
                 gender && { label: `👤 ${gender}`, clear: () => setGender('') },
                 age    && { label: `🎂 ${age}`,    clear: () => setAge('') },
                 marital&& { label: `💍 ${marital}`,clear: () => setMarital('') },
+                state  && { label: `🗺️ ${state}`,  clear: () => setState('') },
                 area   && { label: `📍 ${area}`,   clear: () => setArea('') },
                 socCat && { label: `🏷️ ${socCat}`, clear: () => setSocCat('') },
                 role   && { label: `💼 ${role}`,   clear: () => setRole('') },
@@ -810,7 +945,7 @@ export default function SchemeFinder() {
                 No schemes match this profile
               </h3>
               <p className="font-['DM_Sans'] text-sm mb-6" style={{ color:'rgba(17,24,39,0.55)' }}>
-                Try removing some filters to see more results.
+                Try removing some filters or clearing the search to see more results.
               </p>
               <button onClick={handleReset}
                 className="font-['DM_Sans'] font-bold text-sm text-white px-7 py-3 rounded-full"
@@ -819,50 +954,27 @@ export default function SchemeFinder() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredSchemes.map((s, idx) => <SchemeCard key={s.id} s={s} idx={idx} />)}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {paginatedSchemes.map((s, idx) => <SchemeCard key={s.id} s={s} idx={idx} />)}
+              </div>
+
+              {/* Pagination + summary */}
+              <div className="mt-6 text-center">
+                <p className="font-['DM_Sans'] text-xs mb-3" style={{ color:'rgba(17,24,39,0.45)' }}>
+                  Page {page} of {Math.ceil(filteredSchemes.length / PAGE_SIZE)} · {filteredSchemes.length.toLocaleString()} results
+                </p>
+                <Pagination
+                  page={page}
+                  total={filteredSchemes.length}
+                  pageSize={PAGE_SIZE}
+                  onChange={p => { setPage(p); resultsRef.current?.scrollIntoView({ behavior:'smooth', block:'start' }); }}
+                />
+              </div>
+            </>
           )}
         </div>
       )}
     </section>
-  );
-}
-
-// ─── Scheme Card ──────────────────────────────────────────────────────────────
-function SchemeCard({ s, idx }) {
-  const [hov, setHov] = useState(false);
-  const cfg = SCHEME_CAT_CFG[s.schemeCategory] || { bg:'rgba(11,37,69,0.08)', text:'#0B2545', icon:'📋', grad:'from-gray-400 to-gray-500' };
-  return (
-    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      className="sf-card flex flex-col rounded-3xl overflow-hidden border sf-cards-in"
-      style={{
-        animationDelay:`${idx * 0.05}s`,
-        background:'rgba(255,255,255,0.74)',
-        backdropFilter:'blur(16px)',
-        WebkitBackdropFilter:'blur(16px)',
-        border: hov ? '1.5px solid rgba(46,159,117,0.35)' : '1.5px solid rgba(11,37,69,0.08)',
-        boxShadow: hov ? '0 16px 40px rgba(11,37,69,0.14)' : '0 2px 16px rgba(11,37,69,0.07)',
-      }}>
-      <div className={`h-1.5 w-full bg-gradient-to-r ${cfg.grad}`} />
-      <div className="flex flex-col gap-3 p-5 sm:p-6 flex-1">
-        <span className="inline-flex items-center gap-1.5 font-['DM_Sans'] text-xs font-bold px-3 py-1.5 rounded-full self-start"
-          style={{ background: cfg.bg, color: cfg.text }}>
-          {cfg.icon} {s.schemeCategory}
-        </span>
-        <h3 className="font-['Playfair_Display'] text-lg font-bold leading-snug" style={{ color:'#0B2545' }}>{s.name}</h3>
-        <p className="font-['DM_Sans'] text-sm leading-relaxed flex-1" style={{ color:'rgba(17,24,39,0.60)' }}>{s.description}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {s.eligibilityTags.map(t => (
-            <span key={t} className="font-['DM_Sans'] text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={{ background:'rgba(46,159,117,0.10)', color:'#2E9F75' }}>{t}</span>
-          ))}
-        </div>
-        <button className="sf-know mt-1 font-['DM_Sans'] font-bold text-sm py-2.5 rounded-xl border-2 w-full focus:outline-none transition-all duration-200"
-          style={{ borderColor:'#2E9F75', color:'#2E9F75', background:'transparent' }}>
-          Know More →
-        </button>
-      </div>
-    </div>
   );
 }

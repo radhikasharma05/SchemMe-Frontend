@@ -57,7 +57,7 @@ const LoginPage = () => {
               className="w-12 h-12 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
             />
             <span className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold tracking-tight">
-              Scheme<span className="text-[#D94F20]">Me</span>
+              Schem<span className="text-[#D94F20]">Me</span>
             </span>
           </Link>
           <p className="font-['DM_Sans'] text-[#111827]/50 text-sm mt-2">

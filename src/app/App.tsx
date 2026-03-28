@@ -7,6 +7,7 @@ import SBotWidget from './components/SBotWidget';
 // Pages
 import HomePage       from './pages/HomePage';
 import LoginPage      from './pages/LoginPage';
+import SignupPage     from './pages/SignupPage';
 import SchemesPage    from './pages/SchemesPage';
 import AboutPage      from './pages/AboutPage';
 import HowItWorksPage from './pages/HowItWorksPage';
@@ -25,13 +26,13 @@ function App() {
   return (
     <LanguageProvider>
       <Routes>
-        <Route path="/"            element={<AppShell><HomePage /></AppShell>} />
-        <Route path="/schemes"     element={<AppShell><SchemesPage /></AppShell>} />
+        <Route path="/"             element={<AppShell><HomePage /></AppShell>} />
+        <Route path="/schemes"      element={<AppShell><SchemesPage /></AppShell>} />
         <Route path="/how-it-works" element={<AppShell><HowItWorksPage /></AppShell>} />
-        <Route path="/categories"  element={<AppShell><CategoriesPage /></AppShell>} />
-        <Route path="/about"       element={<AppShell><AboutPage /></AppShell>} />
-        <Route path="/login"       element={<LoginPage />} />
-        {/* /signup — add SignupPage here when ready */}
+        <Route path="/categories"   element={<AppShell><CategoriesPage /></AppShell>} />
+        <Route path="/about"        element={<AppShell><AboutPage /></AppShell>} />
+        <Route path="/login"        element={<LoginPage />} />
+        <Route path="/signup"       element={<SignupPage />} />
       </Routes>
     </LanguageProvider>
   );
