@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
 import {
   Sprout, HeartPulse, GraduationCap, Briefcase, Home,
   Baby, Building, PiggyBank, Users, Bus, ArrowRight,
-  FileText, Cpu, CheckCircle, Search, ShieldCheck, Leaf,
-  Menu, X
+  FileText, Cpu, CheckCircle, Search, ShieldCheck,
+  UserCircle, LogIn, Globe, ChevronDown, Check
 } from 'lucide-react';
+import logoImg from '../../assets/logo.png';
+import { useLanguage, LANGUAGES } from '../context/LanguageContext';
 
 // ─── Logo ────────────────────────────────────────────────────────────────────
 const SchemeLogo = () => (
-  <div className="flex items-center gap-2">
-    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2E9F75] to-[#1a5c42] flex items-center justify-center shadow-md flex-shrink-0">
-      <Leaf size={20} className="text-white" />
-    </div>
-    <span className="font-['Playfair_Display'] text-white text-xl sm:text-2xl font-bold tracking-tight leading-none">
+  <div className="flex items-center gap-1.5">
+    <img
+      src={logoImg}
+      alt="SchemeMe Logo"
+      className="w-11 h-11 sm:w-12 sm:h-12 lg:w-13 lg:h-13 object-contain flex-shrink-0 drop-shadow-md"
+    />
+    <span className="hidden lg:block font-['Playfair_Display'] text-white text-2xl font-bold tracking-tight leading-none">
       Scheme<span className="text-[#FFD166]">Me</span>
     </span>
   </div>
@@ -21,133 +25,167 @@ const SchemeLogo = () => (
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 export const Navbar = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  // Replace with real auth state from your auth context/store
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeLink, setActiveLink] = useState('Home');
 
-  const navLinks = [
-    { label: 'Home', active: true },
-    { label: 'Schemes', active: false },
-    { label: 'About', active: false },
-  ];
+  // Language picker — wired to global context
+  const { language, setLanguage, t } = useLanguage();
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-[#0B2545]/95 backdrop-blur-md shadow-sm">
-      {/* Main bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
+    <nav className="fixed top-0 left-0 w-full z-50 shadow-lg" style={{ background: 'rgba(11,37,69,0.97)', backdropFilter: 'blur(12px)' }}>
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 cursor-pointer flex-shrink-0">
+      {/* ── Row 1: Logo | Search | Lang | Auth ─────────────────────── */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center gap-2 sm:gap-3">
+
+        {/* Logo – left */}
+        <div className="flex-shrink-0 cursor-pointer">
           <SchemeLogo />
         </div>
 
-        {/* Center Search — hidden on mobile */}
-        <div className="hidden md:flex flex-1 max-w-md mx-auto">
-          <div className="relative w-full">
+        {/* Search – centre */}
+        <div className="flex-1 min-w-0">
+          <div className="relative w-full max-w-xl mx-auto">
             <input
               type="text"
-              placeholder="Search government schemes..."
-              className="w-full px-5 py-2.5 pr-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/60 font-['DM_Sans'] text-sm focus:outline-none focus:ring-2 focus:ring-[#2E9F75]/50 focus:border-white/30 transition-all"
+              placeholder={t.nav_search_placeholder}
+              className="w-full pl-4 pr-10 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/50 font-['DM_Sans'] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2E9F75]/60 focus:border-[#2E9F75]/40 transition-all"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white p-2 rounded-full hover:shadow-lg transition-all">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
+            <button
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white w-7 h-7 flex items-center justify-center rounded-full hover:shadow-md transition-all"
+              aria-label="Search"
+            >
+              <Search size={13} />
             </button>
           </div>
         </div>
 
-        {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href="#"
-              className={`font-['DM_Sans'] text-sm font-medium transition-colors ${
-                link.active
-                  ? 'text-white relative after:content-[\'\'] after:absolute after:w-full after:h-[2px] after:bg-[#FF7A45] after:bottom-[-4px] after:left-0'
-                  : 'text-white/80 hover:text-white'
-              }`}
-            >
-              {link.label}
-            </a>
-          ))}
-          <button className="font-['DM_Sans'] text-white px-4 py-2 text-sm font-semibold hover:text-[#2E9F75] transition-colors">
-            Sign In
-          </button>
-          <button className="font-['DM_Sans'] bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-lg transition-all shadow-md whitespace-nowrap">
-            Get Started
-          </button>
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile dropdown menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden overflow-hidden bg-[#0B2545]/98 border-t border-white/10"
+        {/* ── Language picker ── */}
+        <div ref={langRef} className="relative flex-shrink-0">
+          <button
+            onClick={() => setLangOpen(!langOpen)}
+            className="flex items-center gap-1 sm:gap-1.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all"
+            aria-label="Change language"
           >
-            <div className="px-4 py-4 flex flex-col gap-1">
-              {/* Mobile search */}
-              <div className="relative mb-3">
-                <input
-                  type="text"
-                  placeholder="Search government schemes..."
-                  className="w-full px-4 py-2.5 pr-10 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/60 font-['DM_Sans'] text-sm focus:outline-none focus:ring-2 focus:ring-[#2E9F75]/50 transition-all"
-                />
-                <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50" />
+            <Globe size={14} className="flex-shrink-0 text-[#4ecca3]" />
+            <span className="font-bold tracking-wide">{language.code}</span>
+            <ChevronDown
+              size={12}
+              className={`flex-shrink-0 transition-transform duration-200 text-white/60 ${langOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {/* Dropdown */}
+          {langOpen && (
+            <div className="absolute right-0 top-[calc(100%+8px)] w-52 bg-[#0B2545] border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-50">
+              {/* Header */}
+              <div className="px-4 py-2.5 border-b border-white/10 flex items-center gap-2">
+                <Globe size={13} className="text-[#4ecca3]" />
+                <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">{t.nav_select_language}</span>
               </div>
-
-              {/* Nav links */}
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href="#"
-                  onClick={() => setMobileOpen(false)}
-                  className={`font-['DM_Sans'] text-base py-3 px-2 border-b border-white/10 transition-colors ${
-                    link.active ? 'text-white font-semibold' : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  {link.label}
-                </a>
-              ))}
-
-              {/* Auth buttons */}
-              <div className="flex flex-col gap-3 mt-4">
-                <button className="w-full font-['DM_Sans'] text-white border border-white/20 px-4 py-2.5 rounded-full text-sm font-semibold hover:bg-white/10 transition-colors">
-                  Sign In
-                </button>
-                <button className="w-full font-['DM_Sans'] bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-4 py-2.5 rounded-full text-sm font-bold hover:shadow-lg transition-all shadow-md">
-                  Get Started
-                </button>
+              {/* List */}
+              <div className="max-h-64 overflow-y-auto scrollbar-none py-1">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => { setLanguage(lang); setLangOpen(false); }}
+                    className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors ${
+                      language.code === lang.code
+                        ? 'bg-[#2E9F75]/20 text-[#4ecca3]'
+                        : 'text-white/75 hover:bg-white/8 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold leading-tight">{lang.native}</span>
+                      <span className="text-xs text-white/40 mt-0.5">{lang.label}</span>
+                    </div>
+                    {language.code === lang.code && (
+                      <Check size={14} className="text-[#4ecca3] flex-shrink-0" />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
-          </motion.div>
+          )}
+        </div>
+
+        {/* Auth – right */}
+        {isLoggedIn ? (
+          <button
+            onClick={() => setIsLoggedIn(false)}
+            className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all"
+          >
+            <UserCircle size={18} className="flex-shrink-0" />
+            <span className="hidden sm:inline whitespace-nowrap">{t.nav_my_account}</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsLoggedIn(true)}
+            className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all shadow-md whitespace-nowrap"
+          >
+            <LogIn size={15} className="flex-shrink-0" />
+            <span>{t.nav_login}</span>
+          </button>
         )}
-      </AnimatePresence>
+      </div>
+
+      {/* ── Row 2: Nav links – centered, always visible ── */}
+      <div className="border-t border-white/10" style={{ background: 'rgba(11,37,69,0.85)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          <div className="flex items-center justify-center gap-1 sm:gap-3 overflow-x-auto scrollbar-none h-11 sm:h-12">
+            {[
+              { key: 'Home',        label: t.nav_home },
+              { key: 'Schemes',     label: t.nav_schemes },
+              { key: 'How It Works',label: t.nav_how_it_works },
+              { key: 'Categories',  label: t.nav_categories },
+              { key: 'About',       label: t.nav_about },
+            ].map((link) => (
+              <a
+                key={link.key}
+                href="#"
+                onClick={() => setActiveLink(link.key)}
+                className={`
+                  font-['DM_Sans'] text-xs sm:text-sm whitespace-nowrap
+                  px-4 sm:px-6 py-2 sm:py-2.5 rounded-full
+                  transition-all duration-200 flex-shrink-0 font-medium tracking-wide
+                  ${
+                    activeLink === link.key
+                      ? 'bg-[#2E9F75]/20 text-[#4ecca3] font-semibold ring-1 ring-[#2E9F75]/50'
+                      : 'text-white/65 hover:text-white hover:bg-white/10'
+                  }
+                `}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
     </nav>
   );
 };
 
 // ─── Stats Strip ──────────────────────────────────────────────────────────────
 export const StatsStrip = () => {
+  const { t } = useLanguage();
   const stats = [
-    { label: 'Schemes Available', value: '500+' },
-    { label: 'Beneficiaries', value: '2.8Cr+' },
-    { label: 'Verified Benefits', value: '100%' },
-    { label: 'AI Support', value: '24/7' },
+    { label: t.stat_schemes_label, value: '500+' },
+    { label: t.stat_beneficiaries_label, value: '2.8Cr+' },
+    { label: t.stat_verified_label, value: '100%' },
+    { label: t.stat_ai_label, value: '24/7' },
   ];
 
   return (
@@ -172,11 +210,12 @@ export const StatsStrip = () => {
 
 // ─── How It Works ─────────────────────────────────────────────────────────────
 export const HowItWorks = () => {
+  const { t } = useLanguage();
   const steps = [
-    { title: 'Enter Details', icon: FileText, desc: 'Fill in your basic profile info securely.' },
-    { title: 'AI Matching', icon: Cpu, desc: 'Our engine scans 500+ schemes instantly.' },
-    { title: 'Review Schemes', icon: Search, desc: "See exact benefits you're eligible for." },
-    { title: 'Apply Easily', icon: CheckCircle, desc: 'One-click guidance to official portals.' },
+    { title: t.hiw_step1_title, icon: FileText, desc: t.hiw_step1_desc },
+    { title: t.hiw_step2_title, icon: Cpu,      desc: t.hiw_step2_desc },
+    { title: t.hiw_step3_title, icon: Search,   desc: t.hiw_step3_desc },
+    { title: t.hiw_step4_title, icon: CheckCircle, desc: t.hiw_step4_desc },
   ];
 
   return (
@@ -196,10 +235,10 @@ export const HowItWorks = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <div className="text-center mb-10 sm:mb-16">
           <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3 sm:mb-4">
-            How It Works
+            {t.hiw_heading}
           </h2>
           <p className="font-['DM_Sans'] text-[#111827]/60 max-w-2xl mx-auto text-sm sm:text-base px-2 sm:px-0">
-            Discovering your government benefits is now easier than ever.
+            {t.hiw_sub}
           </p>
         </div>
 
@@ -226,17 +265,18 @@ export const HowItWorks = () => {
 
 // ─── Categories Grid ──────────────────────────────────────────────────────────
 export const CategoriesGrid = () => {
+  const { t } = useLanguage();
   const categories = [
-    { name: 'Agriculture', count: '24 Schemes', icon: Sprout },
-    { name: 'Healthcare', count: '18 Schemes', icon: HeartPulse },
-    { name: 'Education', count: '32 Schemes', icon: GraduationCap },
-    { name: 'Business', count: '15 Schemes', icon: Briefcase },
-    { name: 'Housing', count: '8 Schemes', icon: Home },
-    { name: 'Women & Child', count: '12 Schemes', icon: Baby },
-    { name: 'Infrastructure', count: '5 Schemes', icon: Building },
-    { name: 'Pension', count: '10 Schemes', icon: PiggyBank },
-    { name: 'Minority', count: '9 Schemes', icon: Users },
-    { name: 'Transport', count: '4 Schemes', icon: Bus },
+    { name: t.cat_agriculture,   count: t.cat_agriculture_count,   icon: Sprout },
+    { name: t.cat_healthcare,    count: t.cat_healthcare_count,    icon: HeartPulse },
+    { name: t.cat_education,     count: t.cat_education_count,     icon: GraduationCap },
+    { name: t.cat_business,      count: t.cat_business_count,      icon: Briefcase },
+    { name: t.cat_housing,       count: t.cat_housing_count,       icon: Home },
+    { name: t.cat_women_child,   count: t.cat_women_child_count,   icon: Baby },
+    { name: t.cat_infrastructure,count: t.cat_infrastructure_count,icon: Building },
+    { name: t.cat_pension,       count: t.cat_pension_count,       icon: PiggyBank },
+    { name: t.cat_minority,      count: t.cat_minority_count,      icon: Users },
+    { name: t.cat_transport,     count: t.cat_transport_count,     icon: Bus },
   ];
 
   return (
@@ -257,14 +297,14 @@ export const CategoriesGrid = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-8 sm:mb-12 gap-4">
           <div>
             <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3 sm:mb-4">
-              Browse by Category
+              {t.cat_heading}
             </h2>
             <p className="font-['DM_Sans'] text-[#111827]/60 text-sm sm:text-base max-w-2xl">
-              Explore government initiatives segmented by your specific needs.
+              {t.cat_sub}
             </p>
           </div>
           <button className="hidden sm:flex items-center gap-2 text-[#0B2545] font-medium hover:text-[#2E9F75] transition-colors whitespace-nowrap">
-            View All <ArrowRight size={18} />
+            {t.cat_view_all} <ArrowRight size={18} />
           </button>
         </div>
 
@@ -289,7 +329,7 @@ export const CategoriesGrid = () => {
         {/* Mobile "View All" button */}
         <div className="flex sm:hidden justify-center mt-8">
           <button className="flex items-center gap-2 text-[#0B2545] font-semibold border border-[#0B2545]/20 px-6 py-2.5 rounded-full hover:text-[#2E9F75] hover:border-[#2E9F75]/40 transition-colors text-sm">
-            View All <ArrowRight size={16} />
+            {t.cat_view_all} <ArrowRight size={16} />
           </button>
         </div>
       </div>
@@ -304,6 +344,7 @@ export const PersonalisationCTA = () => {
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
 export const Footer = () => {
+  const { t } = useLanguage();
   return (
     <footer className="bg-[#0B2545] pt-14 sm:pt-20 pb-8 sm:pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -314,17 +355,17 @@ export const Footer = () => {
               <SchemeLogo />
             </div>
             <p className="font-['DM_Sans'] text-white/60 text-sm leading-relaxed">
-              Connecting You to Government Benefits That Matter
+              {t.footer_tagline}
             </p>
           </div>
 
           {/* Col 2 — Navigation */}
           <div>
             <h4 className="font-['DM_Sans'] text-white font-bold mb-4 sm:mb-6 uppercase tracking-wider text-sm">
-              Navigation
+              {t.footer_nav_heading}
             </h4>
             <ul className="space-y-3 sm:space-y-4">
-              {['Home', 'How it Works', 'All Schemes', 'About Us'].map((item) => (
+              {[t.footer_nav_home, t.footer_nav_how, t.footer_nav_all_schemes, t.footer_nav_about].map((item) => (
                 <li key={item}>
                   <a href="#" className="font-['DM_Sans'] text-white/60 hover:text-[#2E9F75] text-sm transition-colors">
                     {item}
@@ -337,10 +378,10 @@ export const Footer = () => {
           {/* Col 3 — Categories */}
           <div>
             <h4 className="font-['DM_Sans'] text-white font-bold mb-4 sm:mb-6 uppercase tracking-wider text-sm">
-              Categories
+              {t.footer_cat_heading}
             </h4>
             <ul className="space-y-3 sm:space-y-4">
-              {['Agriculture', 'Healthcare', 'Education', 'Business & Startups'].map((item) => (
+              {[t.cat_agriculture, t.cat_healthcare, t.cat_education, t.cat_business].map((item) => (
                 <li key={item}>
                   <a href="#" className="font-['DM_Sans'] text-white/60 hover:text-[#2E9F75] text-sm transition-colors">
                     {item}
@@ -353,10 +394,10 @@ export const Footer = () => {
           {/* Col 4 — Legal */}
           <div>
             <h4 className="font-['DM_Sans'] text-white font-bold mb-4 sm:mb-6 uppercase tracking-wider text-sm">
-              Legal & Help
+              {t.footer_legal_heading}
             </h4>
             <ul className="space-y-3 sm:space-y-4">
-              {['Privacy Policy', 'Terms of Service', 'Help Center', 'Contact Support'].map((item) => (
+              {[t.footer_legal_privacy, t.footer_legal_terms, t.footer_legal_help, t.footer_legal_contact].map((item) => (
                 <li key={item}>
                   <a href="#" className="font-['DM_Sans'] text-white/60 hover:text-[#2E9F75] text-sm transition-colors">
                     {item}
@@ -370,14 +411,14 @@ export const Footer = () => {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-['DM_Sans'] text-white/40 text-xs sm:text-sm text-center sm:text-left">
-            © 2026 Schemme Inc. All rights reserved.
+            {t.footer_copyright}
           </p>
           <div className="flex gap-3 sm:gap-4">
             <span className="text-white/40 text-xs sm:text-sm px-3 py-1 bg-white/5 rounded-full border border-white/10">
-              Made in India
+              {t.footer_made_in_india}
             </span>
             <span className="text-[#2E9F75] text-xs sm:text-sm px-3 py-1 bg-[#2E9F75]/10 rounded-full border border-[#2E9F75]/20 flex items-center gap-1">
-              <ShieldCheck size={13} /> Secure Platform
+              <ShieldCheck size={13} /> {t.footer_secure}
             </span>
           </div>
         </div>

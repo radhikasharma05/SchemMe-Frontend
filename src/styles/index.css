@@ -26,3 +26,12 @@ img, video {
   height: auto;
   display: block;
 }
+
+/* ── Hide scrollbars (used on horizontally-scrollable nav strips) ── */
+.scrollbar-none {
+  -ms-overflow-style: none;   /* IE / Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;              /* Chrome / Safari / Opera */
+}

@@ -1,53 +1,56 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { HeartPulse, Leaf, Home, Rocket, Wallet, Baby } from 'lucide-react';
-
-const SCHEMES = [
-  {
-    title: 'Ayushman Bharat',
-    subtitle: 'Health insurance coverage up to ₹5 Lakhs per family per year.',
-    tag: 'Healthcare',
-    icon: HeartPulse,
-    featured: true,
-  },
-  {
-    title: 'PM Kisan Samman Nidhi',
-    subtitle: 'Direct financial support of ₹6,000 per year to farmers.',
-    tag: 'Agriculture',
-    icon: Leaf,
-    featured: false,
-  },
-  {
-    title: 'PM Awas Yojana',
-    subtitle: 'Affordable housing for all with subsidized interest rates.',
-    tag: 'Housing',
-    icon: Home,
-    featured: false,
-  },
-  {
-    title: 'Startup India',
-    subtitle: 'Empowering startups with tax benefits and easy compliance.',
-    tag: 'Business',
-    icon: Rocket,
-    featured: false,
-  },
-  {
-    title: 'Mudra Yojana',
-    subtitle: 'Micro-credit facility up to ₹10 Lakhs for small enterprises.',
-    tag: 'Finance',
-    icon: Wallet,
-    featured: false,
-  },
-  {
-    title: 'Beti Bachao Beti Padhao',
-    subtitle: 'Ensuring survival, protection, and education of the girl child.',
-    tag: 'Women & Child',
-    icon: Baby,
-    featured: false,
-  },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 export const SchemeCarousel = () => {
+  const { t } = useLanguage();
+
+  const SCHEMES = [
+    {
+      title: t.scheme_ayushman_title,
+      subtitle: t.scheme_ayushman_sub,
+      tag: t.scheme_ayushman_tag,
+      icon: HeartPulse,
+      featured: true,
+    },
+    {
+      title: t.scheme_pmkisan_title,
+      subtitle: t.scheme_pmkisan_sub,
+      tag: t.scheme_pmkisan_tag,
+      icon: Leaf,
+      featured: false,
+    },
+    {
+      title: t.scheme_pmawas_title,
+      subtitle: t.scheme_pmawas_sub,
+      tag: t.scheme_pmawas_tag,
+      icon: Home,
+      featured: false,
+    },
+    {
+      title: t.scheme_startup_title,
+      subtitle: t.scheme_startup_sub,
+      tag: t.scheme_startup_tag,
+      icon: Rocket,
+      featured: false,
+    },
+    {
+      title: t.scheme_mudra_title,
+      subtitle: t.scheme_mudra_sub,
+      tag: t.scheme_mudra_tag,
+      icon: Wallet,
+      featured: false,
+    },
+    {
+      title: t.scheme_beti_title,
+      subtitle: t.scheme_beti_sub,
+      tag: t.scheme_beti_tag,
+      icon: Baby,
+      featured: false,
+    },
+  ];
+
   const duplicatedSchemes = [...SCHEMES, ...SCHEMES];
 
   return (
@@ -76,10 +79,10 @@ export const SchemeCarousel = () => {
         {/* Section heading — visible on all screens */}
         <div className="text-center mb-8 sm:mb-10 px-4">
           <h2 className="font-['Playfair_Display'] text-2xl sm:text-3xl md:text-4xl font-bold text-[#0B2545] mb-2 sm:mb-3">
-            Popular Schemes
+            {t.carousel_heading}
           </h2>
           <p className="font-['DM_Sans'] text-[#111827]/60 text-sm sm:text-base max-w-xl mx-auto">
-            Explore government programmes that could benefit you and your family.
+            {t.carousel_subheading}
           </p>
         </div>
 
