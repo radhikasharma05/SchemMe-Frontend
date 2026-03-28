@@ -91,10 +91,10 @@ const STYLES = `
 `;
 
 /* ── Robot SVG ───────────────────────────────────────────── */
-function RobotSVG({ isWalking, facingLeft, armWaving }) {
+function RobotSVG({ isWalking, facingLeft, armWaving, svgWidth = 110, svgHeight = 148 }) {
   return (
     <svg
-      width="110" height="148"
+      width={svgWidth} height={svgHeight}
       viewBox="0 0 130 168"
       xmlns="http://www.w3.org/2000/svg"
       className={`sbot-svg${isWalking ? ' sbot-walking' : ''}`}
@@ -353,8 +353,9 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     : <MiniRobot size={size}/>;
 
   /* Position helpers */
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 480;
   const rLeft    = robotLeft;
-  const chatLeft = Math.max(10, Math.min(rLeft - 250, window.innerWidth - 375));
+  const chatLeft = Math.max(10, Math.min(rLeft - 250, window.innerWidth - (isMobile ? 320 : 375)));
   const wrapAnim = isDancing ? 'sbot-dance' : isWalking ? 'sbot-walk' : 'sbot-idle';
 
   /* ── JSX ── */
@@ -407,7 +408,8 @@ export default function SBotWidget({ avatarSrc = undefined }) {
             onKeyDown={e => e.key === 'Enter' && setIsOpen(v => !v)}
             style={{ cursor: 'pointer', userSelect: 'none' }}
           >
-            <RobotSVG isWalking={isWalking} facingLeft={facingLeft} armWaving={armWaving}/>
+            <RobotSVG isWalking={isWalking} facingLeft={facingLeft} armWaving={armWaving}
+              svgWidth={isMobile ? 82 : 110} svgHeight={isMobile ? 110 : 148}/>
           </div>
 
           {/* Ground shadow */}
@@ -423,7 +425,8 @@ export default function SBotWidget({ avatarSrc = undefined }) {
       {isOpen && (
         <div className="sbot-win" style={{
           position: 'fixed', bottom: 200, left: chatLeft,
-          width: 'min(360px, calc(100vw - 20px))', height: 500,
+          width: isMobile ? 'min(300px, calc(100vw - 16px))' : 'min(360px, calc(100vw - 20px))',
+          height: isMobile ? 430 : 500,
           borderRadius: 18, boxShadow: '0 24px 64px rgba(0,0,0,.21)',
           background: '#fff', display: 'flex', flexDirection: 'column',
           overflow: 'hidden', zIndex: 9998,
