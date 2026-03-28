@@ -227,7 +227,7 @@ const SPEECH = [
 ];
 
 /* ── Main Component ──────────────────────────────────────── */
-export default function SBotWidget({ avatarSrc }) {
+export default function SBotWidget({ avatarSrc = undefined }) {
   const [isOpen,     setIsOpen]     = useState(false);
   const [messages,   setMessages]   = useState([]);
   const [input,      setInput]      = useState('');
