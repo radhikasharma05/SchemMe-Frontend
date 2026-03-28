@@ -460,10 +460,10 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     : <MiniRobot size={size}/>;
 
   /* Position helpers */
-<<<<<<< HEAD
+  const isMobile     = typeof window !== 'undefined' && window.innerWidth < 480;
   const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
-  const CHAT_HEIGHT   = 500;           // chat window height
-  const CHAT_WIDTH    = 360;           // chat window width
+  const CHAT_HEIGHT   = isMobile ? 430 : 500;  // chat window height
+  const CHAT_WIDTH    = isMobile ? 300 : 360;  // chat window width
   const ROBOT_BOTTOM  = 16;            // robot bottom offset
   const ROBOT_HEIGHT  = 148;           // robot SVG height
 
@@ -477,12 +477,6 @@ export default function SBotWidget({ avatarSrc = undefined }) {
   const chatBottom   = Math.max(chatBottomMax > 0 ? chatBottomMax : 0, chatBottomRaw) > chatBottomRaw
     ? chatBottomRaw
     : Math.max(0, chatBottomMax);
-
-=======
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 480;
-  const rLeft    = robotLeft;
-  const chatLeft = Math.max(10, Math.min(rLeft - 250, window.innerWidth - (isMobile ? 320 : 375)));
->>>>>>> 9ccadcb52172fdc84d2bb9042969b1fa4d59c46b
   const wrapAnim = isDancing ? 'sbot-dance' : isWalking ? 'sbot-walk' : 'sbot-idle';
 
   /* ── JSX ── */
@@ -550,19 +544,12 @@ export default function SBotWidget({ avatarSrc = undefined }) {
 
       {/* ════ CHAT WINDOW ════ */}
       {isOpen && (
-<<<<<<< HEAD
         <div ref={chatRef} className="sbot-win" style={{
           position: 'fixed',
           bottom: chatBottom,
           left: chatLeft,
-          width: `min(${CHAT_WIDTH}px, calc(100vw - 20px))`,
+          width: `min(${CHAT_WIDTH}px, calc(100vw - ${isMobile ? '16px' : '20px'}))`,
           height: Math.min(CHAT_HEIGHT, window.innerHeight - NAVBAR_HEIGHT - 20),
-=======
-        <div className="sbot-win" style={{
-          position: 'fixed', bottom: 200, left: chatLeft,
-          width: isMobile ? 'min(300px, calc(100vw - 16px))' : 'min(360px, calc(100vw - 20px))',
-          height: isMobile ? 430 : 500,
->>>>>>> 9ccadcb52172fdc84d2bb9042969b1fa4d59c46b
           borderRadius: 18, boxShadow: '0 24px 64px rgba(0,0,0,.21)',
           background: '#fff', display: 'flex', flexDirection: 'column',
           overflow: 'hidden', zIndex: 9998,
