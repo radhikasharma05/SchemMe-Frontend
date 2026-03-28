@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { Footer } from '../components/Sections';
+import { useLanguage } from '../context/LanguageContext';
 
 const STEPS = [
   {
@@ -78,6 +79,76 @@ const FEATURES = [
 
 const HowItWorksPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const { t } = useLanguage();
+
+  const STEPS = [
+    {
+      number: '01',
+      icon: FileText,
+      title: 'Create Your Profile',
+      desc: 'Fill in your basic information — age, income, state, occupation and family details. Your data is encrypted and never shared with third parties.',
+      color: '#2E9F75',
+      details: ['Takes less than 2 minutes', 'Encrypted & secure', 'No Aadhaar required to start'],
+    },
+    {
+      number: '02',
+      icon: Cpu,
+      title: 'AI Matching Engine',
+      desc: 'Our proprietary AI scans 4000+ government schemes across 30+ ministries in under 3 seconds to find your personalized matches.',
+      color: '#6366F1',
+      details: ['4000+ schemes analysed instantly', 'Updated monthly with new schemes', 'No human involvement — fast & unbiased'],
+    },
+    {
+      number: '03',
+      icon: Search,
+      title: 'Review Your Matches',
+      desc: 'See a ranked list of schemes you qualify for — with benefits, eligibility criteria, and required documents listed clearly.',
+      color: '#F59E0B',
+      details: ['Ranked by impact & relevance', 'Document checklist provided', 'Filter by category or benefit amount'],
+    },
+    {
+      number: '04',
+      icon: CheckCircle,
+      title: 'Apply in One Click',
+      desc: 'We redirect you to the official government portal with pre-filled guidance, so you apply correctly the first time.',
+      color: '#EC4899',
+      details: ['Direct link to official portals', 'Step-by-step application guide', 'Track application status'],
+    },
+  ];
+
+  const FAQS = [
+    {
+      q: 'Is SchemMe a government website?',
+      a: 'No, SchemMe is an independent civic-tech platform that aggregates and simplifies access to official government schemes. We link directly to official government portals for applications.',
+    },
+    {
+      q: 'Is my personal data safe?',
+      a: 'Absolutely. We use bank-level AES-256 encryption. Your data is never sold or shared. You can delete your account and all associated data at any time.',
+    },
+    {
+      q: 'How often is the scheme database updated?',
+      a: 'Our team reviews and updates the scheme database every month, and critical changes are pushed within 48 hours of official announcements.',
+    },
+    {
+      q: 'Does SchemMe charge any fees?',
+      a: 'SchemMe is completely free for individual users. We are funded by grants from civic-tech organisations dedicated to improving government accessibility.',
+    },
+    {
+      q: 'Can I apply for schemes directly on SchemMe?',
+      a: 'Applications are handled on official government portals. SchemMe guides you there with the exact steps and documents needed, eliminating confusion.',
+    },
+    {
+      q: 'What languages does SchemMe support?',
+      a: 'SchemMe supports 23 Indian languages including English, Hindi, Bengali, Telugu, Marathi, Tamil, Kannada, Gujarati, Punjabi, and many more.',
+    },
+  ];
+
+  const FEATURES = [
+    { icon: Shield, title: 'Verified Data', desc: 'All 4000+ schemes sourced from official government portals.', color: '#2E9F75' },
+    { icon: Zap, title: 'Instant Matching', desc: 'AI matches you to eligible schemes in under 3 seconds.', color: '#F59E0B' },
+    { icon: Globe, title: '23 Languages', desc: 'Available in all major Indian regional languages.', color: '#6366F1' },
+    { icon: Heart, title: 'Free Forever', desc: 'No charges, no subscriptions — always free for citizens.', color: '#EC4899' },
+  ];
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #FFF9F0 0%, #F0FDF4 50%, #F0F4FF 100%)' }}>
@@ -93,13 +164,13 @@ const HowItWorksPage = () => {
         <div className="relative z-10 max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <span className="inline-block px-4 py-1.5 bg-[#2E9F75]/20 border border-[#2E9F75]/30 rounded-full text-[#4ecca3] text-sm font-semibold mb-4">
-              Simple. Transparent. Free.
+              {t.hiw_page_badge}
             </span>
             <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl font-black text-white mb-4">
-              How <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] to-[#FF7A45]">SchemMe</span> Works
+              {t.hiw_page_title}
             </h1>
             <p className="text-white/70 text-lg font-['DM_Sans']">
-              Discover every government benefit you're entitled to — in 4 simple steps.
+              {t.hiw_page_sub}
             </p>
           </motion.div>
         </div>
@@ -162,8 +233,8 @@ const HowItWorksPage = () => {
       <div className="bg-white/50 backdrop-blur-sm py-20 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">Why Choose SchemMe?</h2>
-            <p className="text-[#111827]/60 font-['DM_Sans']">Built with India's 140 crore citizens in mind.</p>
+            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">{t.hiw_why_heading}</h2>
+            <p className="text-[#111827]/60 font-['DM_Sans']">{t.hiw_why_sub}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {FEATURES.map((feat, idx) => {
@@ -192,7 +263,7 @@ const HowItWorksPage = () => {
       {/* FAQ */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20">
         <div className="text-center mb-12">
-          <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">Frequently Asked Questions</h2>
+          <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">{t.hiw_faq_heading}</h2>
         </div>
         <div className="space-y-3">
           {FAQS.map((faq, idx) => (
@@ -236,13 +307,13 @@ const HowItWorksPage = () => {
 
       {/* CTA */}
       <div className="py-16 px-4 text-center" style={{ background: 'linear-gradient(135deg, #0B2545, #1a3a6b)' }}>
-        <h2 className="font-['Playfair_Display'] text-3xl font-bold text-white mb-4">Ready to find your benefits?</h2>
-        <p className="text-white/70 font-['DM_Sans'] mb-8">Join 2.8 crore Indians already using SchemMe.</p>
+        <h2 className="font-['Playfair_Display'] text-3xl font-bold text-white mb-4">{t.hiw_cta_heading}</h2>
+        <p className="text-white/70 font-['DM_Sans'] mb-8">{t.hiw_cta_sub}</p>
         <Link
           to="/schemes"
           className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all shadow-lg"
         >
-          Explore Schemes <ArrowRight size={20} />
+          {t.hiw_cta_btn} <ArrowRight size={20} />
         </Link>
       </div>
 

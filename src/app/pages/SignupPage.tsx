@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import logoImg from '../../assets/logo.png';
+import { useLanguage } from '../context/LanguageContext';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ const ErrorMsg = ({ msg }: { msg?: string }) =>
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -206,8 +208,8 @@ const SignupPage = () => {
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mx-auto mb-4 shadow-xl">
           <CheckCircle2 size={40} className="text-white" />
         </div>
-        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">Account Created!</h2>
-        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">Redirecting you to login…</p>
+        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">{t.signup_success_heading}</h2>
+        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">{t.signup_success_sub}</p>
       </motion.div>
     </div>
   );
@@ -247,10 +249,10 @@ const SignupPage = () => {
           </div>
 
           <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold text-center mb-2">
-            Verify Your Email
+            {t.signup_verify_heading}
           </h2>
           <p className="font-['DM_Sans'] text-[#0B2545]/55 text-sm text-center mb-1">
-            We've sent a 6‑digit code to
+            {t.signup_verify_sub}
           </p>
           <p className="font-['DM_Sans'] text-[#2E9F75] text-sm font-bold text-center mb-7 truncate">
             {form.email}
@@ -295,7 +297,7 @@ const SignupPage = () => {
             ) : (
               <>
                 <CheckCircle2 size={17} />
-                Verify &amp; Create Account
+                {t.signup_verify_btn}
               </>
             )}
           </button>
@@ -308,7 +310,7 @@ const SignupPage = () => {
               onClick={() => setOtp(['', '', '', '', '', ''])}
               className="text-[#2E9F75] font-semibold hover:underline transition-colors"
             >
-              Resend OTP
+              {t.signup_resend}
             </button>
           </p>
 
@@ -324,7 +326,7 @@ const SignupPage = () => {
           onClick={() => setStage('form')}
           className="mt-5 w-full text-center font-['DM_Sans'] text-sm text-[#0B2545]/45 hover:text-[#2E9F75] transition-colors"
         >
-          ← Back to signup
+          {t.signup_back}
         </button>
       </div>
     </div>
@@ -352,7 +354,7 @@ const SignupPage = () => {
             </span>
           </Link>
           <p className="font-['DM_Sans'] text-[#111827]/50 text-sm mt-1.5">
-            Create your profile to discover schemes tailored for you
+            {t.signup_tagline}
           </p>
         </div>
 
@@ -655,7 +657,7 @@ const SignupPage = () => {
               ) : (
                 <>
                   <UserPlus size={17} />
-                  Create My Account
+                  {t.signup_create_btn}
                 </>
               )}
             </button>
@@ -667,12 +669,12 @@ const SignupPage = () => {
               className="w-full flex items-center justify-center gap-2 border-2 border-[#0B2545]/15 hover:border-[#2E9F75] text-[#0B2545]/60 hover:text-[#2E9F75] py-3.5 rounded-2xl font-['DM_Sans'] font-semibold text-sm transition-all hover:bg-[#2E9F75]/5"
             >
               <LogIn size={15} />
-              Already have an account? Login
+              {t.signup_login_btn}
             </button>
 
             <div className="flex items-center justify-center gap-1.5 pt-1 text-xs text-[#0B2545]/40 font-['DM_Sans']">
               <ShieldCheck size={12} className="text-[#2E9F75]" />
-              Your data is encrypted & used only to personalise scheme results
+              {t.signup_trust}
             </div>
           </motion.div>
 

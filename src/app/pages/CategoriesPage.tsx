@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { Footer } from '../components/Sections';
+import { useLanguage } from '../context/LanguageContext';
 
 // Stable seeded random: produces same numbers on every render, different per category
 function seededRandom(seed: number) {
@@ -112,9 +113,104 @@ const CATEGORIES_DEF = [
 
 
 const CategoriesPage = () => {
+  const { t } = useLanguage();
+
+  const CATEGORIES_DEF = useMemo(() => [
+    {
+      name: t.cat_agriculture,
+      icon: Sprout,
+      color: '#84CC16',
+      bg: '#f7fee7',
+      desc: 'Crop insurance, farm loans, irrigation subsidies and direct income support for farmers.',
+      tag: 'Agriculture',
+      seed: 1,
+    },
+    {
+      name: t.cat_healthcare,
+      icon: HeartPulse,
+      color: '#10B981',
+      bg: '#f0fdf4',
+      desc: 'Health insurance, free medicines, hospital schemes and community health programs.',
+      tag: 'Health',
+      seed: 2,
+    },
+    {
+      name: t.cat_education,
+      icon: GraduationCap,
+      color: '#3B82F6',
+      bg: '#eff6ff',
+      desc: 'Scholarships, mid-day meals, skill development and higher education support.',
+      tag: 'Education',
+      seed: 3,
+    },
+    {
+      name: t.cat_business,
+      icon: Briefcase,
+      color: '#8B5CF6',
+      bg: '#f5f3ff',
+      desc: 'Startup loans, MSME grants, tax incentives and business development programs.',
+      tag: 'Business',
+      seed: 4,
+    },
+    {
+      name: t.cat_housing,
+      icon: Home,
+      color: '#6366F1',
+      bg: '#eef2ff',
+      desc: 'Affordable housing, home loans, interest subsidies and urban/rural housing missions.',
+      tag: 'Housing',
+      seed: 5,
+    },
+    {
+      name: t.cat_women_child,
+      icon: Baby,
+      color: '#EC4899',
+      bg: '#fdf2f8',
+      desc: 'Maternity benefits, girl child savings, nutrition programs and women empowerment schemes.',
+      tag: 'Women & Child',
+      seed: 6,
+    },
+    {
+      name: t.cat_infrastructure,
+      icon: Building,
+      color: '#F97316',
+      bg: '#fff7ed',
+      desc: 'Rural roads, urban development, sanitation mission and smart city projects.',
+      tag: 'Infrastructure',
+      seed: 7,
+    },
+    {
+      name: t.cat_pension,
+      icon: PiggyBank,
+      color: '#64748B',
+      bg: '#f8fafc',
+      desc: 'Old age pension, disability pension, widow pension and retirement savings schemes.',
+      tag: 'Pension',
+      seed: 8,
+    },
+    {
+      name: t.cat_minority,
+      icon: Users,
+      color: '#F59E0B',
+      bg: '#fffbeb',
+      desc: 'Scholarships, skill training and economic development for minority communities.',
+      tag: 'Minority',
+      seed: 9,
+    },
+    {
+      name: t.cat_transport,
+      icon: Bus,
+      color: '#06B6D4',
+      bg: '#ecfeff',
+      desc: 'BSY concessions, public transport subsidies and rural connectivity programs.',
+      tag: 'Transport',
+      seed: 10,
+    },
+  ], [t]);
+
   const CATEGORIES = useMemo(
     () => CATEGORIES_DEF.map(cat => ({ ...cat, count: schemeCount(cat.seed) })),
-    []
+    [CATEGORIES_DEF]
   );
 
   return (
@@ -131,13 +227,13 @@ const CategoriesPage = () => {
         <div className="relative z-10 max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <span className="inline-block px-4 py-1.5 bg-[#FFD166]/20 border border-[#FFD166]/30 rounded-full text-[#FFD166] text-sm font-semibold mb-4">
-              {CATEGORIES.reduce((s, c) => s + c.count, 0).toLocaleString()}+ Schemes across {CATEGORIES.length} Categories
+              {CATEGORIES.reduce((s, c) => s + c.count, 0).toLocaleString()}+ {t.cat_page_badge}
             </span>
             <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl font-black text-white mb-4">
-              Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] to-[#FF7A45]">Category</span>
+              {t.cat_page_title}
             </h1>
             <p className="text-white/70 text-lg font-['DM_Sans']">
-              Find the right government scheme based on your specific needs and situation.
+              {t.cat_page_sub}
             </p>
           </motion.div>
         </div>
@@ -198,15 +294,15 @@ const CategoriesPage = () => {
 
       {/* Bottom CTA */}
       <div className="py-16 px-4 text-center" style={{ background: 'linear-gradient(135deg, #0B2545, #1a3a6b)' }}>
-        <h2 className="font-['Playfair_Display'] text-3xl font-bold text-white mb-4">Not sure which category fits you?</h2>
+        <h2 className="font-['Playfair_Display'] text-3xl font-bold text-white mb-4">{t.cat_cta_heading}</h2>
         <p className="text-white/70 font-['DM_Sans'] mb-8 max-w-lg mx-auto">
-          Let our AI analyse your profile and recommend the most relevant schemes across all categories.
+          {t.cat_cta_sub}
         </p>
         <Link
           to="/schemes"
           className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all shadow-lg"
         >
-          Find My Schemes <ArrowRight size={20} />
+          {t.cat_cta_btn} <ArrowRight size={20} />
         </Link>
       </div>
 

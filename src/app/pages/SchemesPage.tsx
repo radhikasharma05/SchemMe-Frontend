@@ -5,6 +5,7 @@ import { Search, X, RefreshCw, AlertCircle } from 'lucide-react';
 import { Footer } from '../components/Sections';
 import SchemeDetailModal from '../components/SchemeDetailModal';
 import localSchemes from '../../res/schemes.json';
+import { useLanguage } from '../context/LanguageContext';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const API_BASE = 'http://192.168.137.1:3000/api';
@@ -221,6 +222,7 @@ function SchemeCard({ scheme, onExplore, idx }: { scheme: ApiScheme; onExplore: 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function SchemesPage() {
   const location = useLocation();
+  const { t } = useLanguage();
 
   // Pick initial category from ?category= query param
   const initCategory = () => {
@@ -313,11 +315,11 @@ export default function SchemesPage() {
             }}>
               Browse All{' '}
               <span style={{ background: 'linear-gradient(90deg,#FFD166,#FF7A45)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                Government Schemes
+                {t.schemes_page_title}
               </span>
             </h1>
             <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 16, color: 'rgba(255,255,255,0.70)', margin: '0 auto 28px', maxWidth: 560 }}>
-              Select a category below and instantly see real schemes from the backend database.
+              {t.schemes_page_sub}
             </p>
           </motion.div>
 
@@ -328,7 +330,7 @@ export default function SchemesPage() {
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search schemes by name, benefit or keyword…"
+              placeholder={t.schemes_search_placeholder}
               style={{
                 width: '100%', paddingLeft: 44, paddingRight: 44, paddingBlock: 14,
                 borderRadius: 16, border: '1.5px solid rgba(255,255,255,0.18)',
@@ -387,9 +389,9 @@ export default function SchemesPage() {
             </h2>
             <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: 'rgba(17,24,39,0.55)', margin: 0 }}>
             {loading
-              ? 'Loading…'
+              ? t.schemes_loading
               : error
-                ? 'Could not load schemes'
+                ? t.schemes_error
                 : `${filtered.length.toLocaleString()} scheme${filtered.length !== 1 ? 's' : ''}${searchQuery ? ' (filtered)' : ''}`}
             </p>
           </div>
@@ -455,17 +457,17 @@ export default function SchemesPage() {
               >
                 <div style={{ fontSize: 52, marginBottom: 14 }}>🔍</div>
                 <h3 style={{ fontFamily: "'Playfair Display',Georgia,serif", fontSize: 20, fontWeight: 800, color: '#0B2545', margin: '0 0 8px' }}>
-                  {searchQuery ? 'No matching schemes' : 'No schemes found'}
+                  {searchQuery ? 'No matching schemes' : t.schemes_no_results}
                 </h3>
                 <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: 'rgba(17,24,39,0.55)', margin: '0 0 20px' }}>
-                  {searchQuery ? 'Try a different keyword.' : 'This category has no schemes from the API yet.'}
+                  {searchQuery ? 'Try a different keyword.' : t.schemes_no_results_sub}
                 </p>
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
                     style={{ fontFamily: "'DM Sans',sans-serif", fontWeight: 700, fontSize: 13, paddingInline: 20, paddingBlock: 9, borderRadius: 99, border: 'none', background: 'linear-gradient(135deg,#2E9F75,#10B981)', color: '#fff', cursor: 'pointer' }}
                   >
-                    Clear Search
+                    {t.schemes_clear_search}
                   </button>
                 )}
               </motion.div>

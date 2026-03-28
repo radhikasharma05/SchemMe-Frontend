@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { Footer } from '../components/Sections';
+import { useLanguage } from '../context/LanguageContext';
 
 const TEAM = [
   { name: 'Aarav Sharma', role: 'Founder & CEO', emoji: '👨‍💼', bg: '#eff6ff' },
@@ -31,6 +32,17 @@ const STATS = [
 ];
 
 const AboutPage = () => {
+  const { t } = useLanguage();
+
+  const VALUES = [
+    { icon: Target, title: 'Accuracy First', desc: 'We only publish verified scheme data sourced from official government portals.', color: '#2E9F75' },
+    { icon: Users, title: 'Inclusive by Design', desc: 'Built for every Indian — supporting 13 languages and accessible interfaces.', color: '#6366F1' },
+    { icon: Globe, title: 'Transparency', desc: 'Open about how our AI works. No hidden algorithms, no commercial bias.', color: '#F59E0B' },
+    { icon: Heart, title: 'Citizen First', desc: "Our mission is impact on Indian lives, not profit. SchemMe is free forever.", color: '#EC4899' },
+    { icon: Zap, title: 'Speed Matters', desc: 'Bureaucracy is slow. Our platform is designed to cut through it instantly.', color: '#F97316' },
+    { icon: Shield, title: 'Privacy by Default', desc: 'Your personal data stays yours. We use encryption and never sell data.', color: '#8B5CF6' },
+  ];
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #FFF9F0 0%, #F0FDF4 50%, #F0F4FF 100%)' }}>
       {/* Hero */}
@@ -45,15 +57,13 @@ const AboutPage = () => {
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <span className="inline-block px-4 py-1.5 bg-[#2E9F75]/20 border border-[#2E9F75]/30 rounded-full text-[#4ecca3] text-sm font-semibold mb-4">
-              Our Mission
+              {t.about_our_mission}
             </span>
             <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl font-black text-white mb-6 leading-tight">
-              Connecting <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] to-[#FF7A45]">140 Crore Indians</span>
-              <br />to Benefits They Deserve
+              Connecting <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] to-[#FF7A45]">{t.about_heading}</span>
             </h1>
             <p className="text-white/70 text-lg font-['DM_Sans'] max-w-2xl mx-auto leading-relaxed">
-              Every year, thousands of crores in government benefits go unclaimed because citizens don't know they exist.
-              SchemMe exists to change that — making every rupee of benefit accessible to every eligible Indian.
+              {t.about_subtitle}
             </p>
           </motion.div>
         </div>
@@ -83,20 +93,11 @@ const AboutPage = () => {
       {/* Story */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-20">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-6">Our Story</h2>
+          <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-6">{t.about_our_story}</h2>
           <div className="prose prose-lg font-['DM_Sans'] text-[#111827]/70 space-y-4">
-            <p>
-              SchemMe was born out of a simple frustration — a farmer in rural Rajasthan who was eligible for PM-KISAN,
-              Ayushman Bharat, and two state-level schemes, but had claimed none of them because nobody told him they existed.
-            </p>
-            <p>
-              We built SchemMe to be the bridge between India's vast welfare architecture and the citizens it was designed to serve.
-              Our team of engineers, policy researchers, and language experts has spent thousands of hours cataloguing, verifying
-              and translating every major government scheme into a format that is truly accessible.
-            </p>
-            <p>
-              Today, SchemMe helps 2.8 crore Indians discover and access government benefits — and we're just getting started.
-            </p>
+            <p>{t.about_story_p1}</p>
+            <p>{t.about_story_p2}</p>
+            <p>{t.about_story_p3}</p>
           </div>
         </motion.div>
       </div>
@@ -105,8 +106,8 @@ const AboutPage = () => {
       <div className="bg-white/50 py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">What We Stand For</h2>
-            <p className="text-[#111827]/60 font-['DM_Sans']">Our values guide every decision we make.</p>
+            <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">{t.about_values_heading}</h2>
+            <p className="text-[#111827]/60 font-['DM_Sans']">{t.about_values_sub}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {VALUES.map((val, idx) => {
@@ -135,8 +136,8 @@ const AboutPage = () => {
       {/* Team */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20">
         <div className="text-center mb-12">
-          <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">Meet the Team</h2>
-          <p className="text-[#111827]/60 font-['DM_Sans']">Passionate people working to make government benefits accessible.</p>
+          <h2 className="font-['Playfair_Display'] text-3xl sm:text-4xl font-bold text-[#0B2545] mb-3">{t.about_team_heading}</h2>
+          <p className="text-[#111827]/60 font-['DM_Sans']">{t.about_team_sub}</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
           {TEAM.map((member, idx) => (
@@ -164,8 +165,8 @@ const AboutPage = () => {
       {/* Contact */}
       <div className="py-16 px-4 sm:px-6" style={{ background: 'linear-gradient(135deg, #0B2545, #1a3a6b)' }}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-['Playfair_Display'] text-3xl font-bold text-white mb-4">Get in Touch</h2>
-          <p className="text-white/70 font-['DM_Sans'] mb-10">Have a question or want to partner with us? We'd love to hear from you.</p>
+          <h2 className="font-['Playfair_Display'] text-3xl font-bold text-white mb-4">{t.about_contact_heading}</h2>
+          <p className="text-white/70 font-['DM_Sans'] mb-10">{t.about_contact_sub}</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
             {[
               { icon: Mail, label: 'Email Us', value: 'hello@schemme.in' },
@@ -188,7 +189,7 @@ const AboutPage = () => {
             to="/schemes"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all shadow-lg"
           >
-            Start Exploring Schemes <ArrowRight size={20} />
+            {t.about_cta} <ArrowRight size={20} />
           </Link>
         </div>
       </div>
