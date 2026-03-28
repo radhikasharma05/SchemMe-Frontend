@@ -2,6 +2,7 @@ import React from 'react';
 import { Hero } from './components/Hero';
 import { SchemeCarousel } from './components/SchemeCarousel';
 import { Navbar, StatsStrip, HowItWorks, CategoriesGrid, PersonalisationCTA, Footer } from './components/Sections';
+import SBotWidget from './components/SBotWidget';
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
         <PersonalisationCTA />
       </main>
       <Footer />
+      {/* SBot floating chatbot — no avatarSrc passed so it uses the fallback gradient */}
+      <SBotWidget />
     </div>
   );
 }
