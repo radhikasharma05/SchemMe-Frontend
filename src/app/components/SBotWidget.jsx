@@ -460,10 +460,17 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     : <MiniRobot size={size}/>;
 
   /* Position helpers */
+<<<<<<< HEAD
   const isMobile     = typeof window !== 'undefined' && window.innerWidth < 480;
   const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
   const CHAT_HEIGHT   = isMobile ? 430 : 500;  // chat window height
   const CHAT_WIDTH    = isMobile ? 300 : 360;  // chat window width
+=======
+  const isMobile      = typeof window !== 'undefined' && window.innerWidth < 480;
+  const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
+  const CHAT_HEIGHT   = isMobile ? 430 : 500;
+  const CHAT_WIDTH    = isMobile ? 320 : 360;
+>>>>>>> 0fbaba3b9d09c700fd4e9175a2f3b1c8c31c64fa
   const ROBOT_BOTTOM  = 16;            // robot bottom offset
   const ROBOT_HEIGHT  = 148;           // robot SVG height
 
@@ -474,7 +481,7 @@ export default function SBotWidget({ avatarSrc = undefined }) {
   const chatBottomRaw = ROBOT_BOTTOM + ROBOT_HEIGHT + 16;
   // Maximum allowed bottom = viewport height − navbar height − chat height
   const chatBottomMax = window.innerHeight - NAVBAR_HEIGHT - CHAT_HEIGHT;
-  const chatBottom   = Math.max(chatBottomMax > 0 ? chatBottomMax : 0, chatBottomRaw) > chatBottomRaw
+  const chatBottom    = Math.max(chatBottomMax > 0 ? chatBottomMax : 0, chatBottomRaw) > chatBottomRaw
     ? chatBottomRaw
     : Math.max(0, chatBottomMax);
   const wrapAnim = isDancing ? 'sbot-dance' : isWalking ? 'sbot-walk' : 'sbot-idle';
