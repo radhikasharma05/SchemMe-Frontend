@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { Search } from 'lucide-react';
 import { FloatingLines } from './FloatingLines';
 
 export const Hero = () => {
   return (
-    <section 
-      className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-6 overflow-hidden"
+    <section
+      className="relative min-h-screen flex flex-col items-center justify-center pt-24 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 overflow-hidden"
       style={{
         background: 'linear-gradient(150deg, #F5ECD8 0%, #EDD5B5 25%, #E8C49A 45%, #D4E8CE 70%, #C8D8E4 90%, #DDD0E8 100%)'
       }}
@@ -15,14 +15,14 @@ export const Hero = () => {
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <FloatingLines
           linesGradient={[
-            "#F5ECD8",   // warm cream — dominant base
-            "#EDD5B5",   // soft peach-beige
-            "#E8C49A",   // warm peach-orange glow
-            "#EAD6C0",   // light apricot blend
-            "#D4E8CE",   // pale mint-green
-            "#C2DFC9",   // soft sage-green
-            "#DDD0E8",   // very faint lavender
-            "#C8D8E4",   // pale blue-grey
+            "#F5ECD8",
+            "#EDD5B5",
+            "#E8C49A",
+            "#EAD6C0",
+            "#D4E8CE",
+            "#C2DFC9",
+            "#DDD0E8",
+            "#C8D8E4",
           ]}
           enabledWaves={['top', 'middle', 'bottom']}
           lineCount={[12, 20, 12]}
@@ -42,30 +42,35 @@ export const Hero = () => {
       </div>
 
       {/* Hero Content */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center"
+        className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center text-center"
       >
         {/* Headline */}
-        <h1 className="font-['Playfair_Display'] text-5xl md:text-7xl font-black text-[#0B2545] leading-tight mb-6">
-          Find the <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D94F20] to-[#D9A030]">Right Scheme</span>,<br className="hidden md:block" />
-          Made for You
+        <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-[#0B2545] leading-tight mb-4 sm:mb-6">
+          Find the{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D94F20] to-[#D9A030]">
+            Right Scheme
+          </span>
+          ,
+          <br className="hidden sm:block" />
+          {' '}Made for You
         </h1>
 
         {/* Subtitle */}
-        <p className="font-['DM_Sans'] text-lg md:text-xl text-[#111827]/70 max-w-2xl mb-12 leading-relaxed font-bold">
+        <p className="font-['DM_Sans'] text-base sm:text-lg md:text-xl text-[#111827]/70 max-w-xl sm:max-w-2xl mb-8 sm:mb-12 leading-relaxed font-bold px-2 sm:px-0">
           Personalized Government Schemes at Your Fingertips
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-5 mb-16">
-          <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-xl transition-all shadow-lg">
-            <Search size={20} />
+        <div className="flex flex-col xs:flex-row sm:flex-row items-center gap-3 sm:gap-5 mb-10 sm:mb-16 w-full sm:w-auto px-4 sm:px-0">
+          <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:shadow-xl transition-all shadow-lg">
+            <Search size={18} />
             Explore Schemes
           </button>
-          <button className="flex items-center justify-center gap-2 bg-[#2E9F75] text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-[#1a7a52] transition-all shadow-md">
+          <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2E9F75] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:bg-[#1a7a52] transition-all shadow-md">
             Learn More
           </button>
         </div>
@@ -80,78 +85,85 @@ export const Hero = () => {
             .animate-scroll-left {
               animation: scroll-left 40s linear infinite;
             }
+            @media (max-width: 640px) {
+              .hero-card-std { width: 160px !important; height: 200px !important; }
+              .hero-card-lg  { width: 190px !important; height: 230px !important; }
+            }
+            @media (min-width: 641px) and (max-width: 1023px) {
+              .hero-card-std { width: 200px !important; height: 240px !important; }
+              .hero-card-lg  { width: 230px !important; height: 270px !important; }
+            }
           `}} />
-          
-          <div className="flex gap-6 items-center animate-scroll-left">
-            {/* Duplicate the cards twice for seamless loop */}
+
+          <div className="flex gap-4 sm:gap-6 items-center animate-scroll-left">
             {[...Array(2)].map((_, setIndex) => (
               <React.Fragment key={setIndex}>
                 {/* PM-KISAN Card */}
-                <div className="relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
-                  <img 
-                    src="https://images.unsplash.com/photo-1623211269755-569fec0536d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBmYXJtZXIlMjBhZ3JpY3VsdHVyZSUyMGZpZWxkfGVufDF8fHx8MTc3NDYxODc0MXww&ixlib=rb-4.1.0&q=80&w=1080" 
-                    alt="PM-KISAN" 
+                <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
+                  <img
+                    src="https://images.unsplash.com/photo-1623211269755-569fec0536d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBmYXJtZXIlMjBhZ3JpY3VsdHVyZSUyMGZpZWxkfGVufDF8fHx8MTc3NDYxODc0MXww&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="PM-KISAN"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="font-['Playfair_Display'] text-xl font-bold text-white mb-1">PM-KISAN</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">PM-KISAN</h3>
                     <p className="font-['DM_Sans'] text-xs text-white/90">Support for Farmers</p>
                   </div>
                 </div>
 
                 {/* Scholarship Card */}
-                <div className="relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
-                  <img 
-                    src="https://images.unsplash.com/photo-1758525866582-5c74fb7d9378?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwc3R1ZHlpbmclMjBib29rc3xlbnwxfHx8fDE3NzQ2MzI4MDR8MA&ixlib=rb-4.1.0&q=80&w=1080" 
-                    alt="Scholarship" 
+                <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
+                  <img
+                    src="https://images.unsplash.com/photo-1758525866582-5c74fb7d9378?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwc3R1ZHlpbmclMjBib29rc3xlbnwxfHx8fDE3NzQ2MzI4MDR8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="Scholarship"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="font-['Playfair_Display'] text-xl font-bold text-white mb-1">Scholarship</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">Scholarship</h3>
                     <p className="font-['DM_Sans'] text-xs text-white/90">Education Assistance</p>
                   </div>
                 </div>
 
-                {/* Center Featured Card - Larger */}
-                <div className="relative w-[280px] h-[320px] rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 group border-4 border-white/80">
-                  <img 
-                    src="https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzdHVkZW50JTIwc3R1ZHlpbmclMjBlZHVjYXRpb258ZW58MXx8fHwxNzc0NjE0MDI2fDA&ixlib=rb-4.1.0&q=80&w=1080" 
-                    alt="Scholarship" 
+                {/* Center Featured Card */}
+                <div className="hero-card-lg relative w-[280px] h-[320px] rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 group border-4 border-white/80">
+                  <img
+                    src="https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzdHVkZW50JTIwc3R1ZHlpbmclMjBlZHVjYXRpb258ZW58MXx8fHwxNzc0NjE0MDI2fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="Scholarship"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h3 className="font-['Playfair_Display'] text-2xl font-bold text-white mb-2">Scholarship</h3>
-                    <p className="font-['DM_Sans'] text-sm text-white/90">Education Assistance</p>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                    <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Scholarship</h3>
+                    <p className="font-['DM_Sans'] text-xs sm:text-sm text-white/90">Education Assistance</p>
                   </div>
                 </div>
 
                 {/* Ayushman Bharat Card */}
-                <div className="relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
-                  <img 
-                    src="https://images.unsplash.com/photo-1758691462321-9b6c98c40f7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkb2N0b3IlMjBlbGRlcmx5JTIwcGF0aWVudCUyMGhlYWx0aGNhcmV8ZW58MXx8fHwxNzc0NTkxNzI2fDA&ixlib=rb-4.1.0&q=80&w=1080" 
-                    alt="Ayushman Bharat" 
+                <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
+                  <img
+                    src="https://images.unsplash.com/photo-1758691462321-9b6c98c40f7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkb2N0b3IlMjBlbGRlcmx5JTIwcGF0aWVudCUyMGhlYWx0aGNhcmV8ZW58MXx8fHwxNzc0NTkxNzI2fDA&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="Ayushman Bharat"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="font-['Playfair_Display'] text-xl font-bold text-white mb-1">Ayushman Bharat</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">Ayushman Bharat</h3>
                     <p className="font-['DM_Sans'] text-xs text-white/90">Health Care for All</p>
                   </div>
                 </div>
 
                 {/* PM Awas Yojana Card */}
-                <div className="relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
-                  <img 
-                    src="https://images.unsplash.com/photo-1753161618091-b4cf35b9aa99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHdvbWFuJTIwaG9sZGluZyUyMHRhYmxldCUyMHNtaWxpbmd8ZW58MXx8fHwxNzc0NjMyODExfDA&ixlib=rb-4.1.0&q=80&w=1080" 
-                    alt="PM Awas Yojana" 
+                <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
+                  <img
+                    src="https://images.unsplash.com/photo-1753161618091-b4cf35b9aa99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHdvbWFuJTIwaG9sZGluZyUyMHRhYmxldCUyMHNtaWxpbmd8ZW58MXx8fHwxNzc0NjMyODExfDA&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="PM Awas Yojana"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="font-['Playfair_Display'] text-xl font-bold text-white mb-1">PM Awas Yojana</h3>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">PM Awas Yojana</h3>
                     <p className="font-['DM_Sans'] text-xs text-white/90">Affordable Housing</p>
                   </div>
                 </div>
@@ -161,10 +173,13 @@ export const Hero = () => {
         </div>
 
         {/* Tagline Text */}
-        <div className="font-['DM_Sans'] text-[17px] md:text-[18px] text-[#4B7F6A] font-semibold mt-10 tracking-wide leading-relaxed flex items-center gap-4" style={{ textShadow: '0 2px 8px rgba(75, 127, 106, 0.1)' }}>
-          <div className="w-[1px] h-8 bg-gradient-to-b from-transparent via-[#2E9F75] to-transparent"></div>
+        <div
+          className="font-['DM_Sans'] text-sm sm:text-[17px] md:text-[18px] text-[#4B7F6A] font-semibold mt-8 sm:mt-10 tracking-wide leading-relaxed flex items-center gap-3 sm:gap-4 px-4 sm:px-0 text-center"
+          style={{ textShadow: '0 2px 8px rgba(75, 127, 106, 0.1)' }}
+        >
+          <div className="hidden sm:block w-[1px] h-8 bg-gradient-to-b from-transparent via-[#2E9F75] to-transparent flex-shrink-0" />
           <span>Connecting You to Government Benefits That Matter</span>
-          <div className="w-[1px] h-8 bg-gradient-to-b from-transparent via-[#2E9F75] to-transparent"></div>
+          <div className="hidden sm:block w-[1px] h-8 bg-gradient-to-b from-transparent via-[#2E9F75] to-transparent flex-shrink-0" />
         </div>
       </motion.div>
     </section>

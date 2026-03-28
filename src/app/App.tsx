@@ -5,7 +5,7 @@ import { Navbar, StatsStrip, HowItWorks, CategoriesGrid, PersonalisationCTA, Foo
 
 function App() {
   return (
-    <div className="min-h-screen font-['DM_Sans',sans-serif] text-[#111827] bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2] selection:bg-[#2E9F75] selection:text-white">
+    <div className="min-h-screen overflow-x-hidden font-['DM_Sans',sans-serif] text-[#111827] bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2] selection:bg-[#2E9F75] selection:text-white">
       <Navbar />
       <main>
         <Hero />
