@@ -3,9 +3,11 @@ import { motion } from 'motion/react';
 import { Search } from 'lucide-react';
 import { FloatingLines } from './FloatingLines';
 import { useLanguage } from '../context/LanguageContext';
+import { useNavigate } from 'react-router';
 
 export const Hero = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   return (
     <section
       className="relative min-h-screen flex flex-col items-center justify-center pt-28 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 overflow-hidden"
@@ -68,11 +70,17 @@ export const Hero = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col xs:flex-row sm:flex-row items-center gap-3 sm:gap-5 mb-10 sm:mb-16 w-full sm:w-auto px-4 sm:px-0">
-          <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:shadow-xl transition-all shadow-lg">
+          <button
+            onClick={() => navigate('/schemes')}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:shadow-xl transition-all shadow-lg"
+          >
             <Search size={18} />
             {t.hero_cta_explore}
           </button>
-          <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2E9F75] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:bg-[#1a7a52] transition-all shadow-md">
+          <button
+            onClick={() => { const el = document.getElementById('how-it-works'); if (el) el.scrollIntoView({ behavior: 'smooth' }); else navigate('/how-it-works'); }}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2E9F75] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:bg-[#1a7a52] transition-all shadow-md"
+          >
             {t.hero_cta_learn}
           </button>
         </div>
