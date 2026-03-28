@@ -76,7 +76,7 @@ export const SchemeCarousel = () => {
       </div>
 
       <div className="relative z-10 w-full">
-        {/* Section heading — visible on all screens */}
+        {/* Section heading */}
         <div className="text-center mb-8 sm:mb-10 px-4">
           <h2 className="font-['Playfair_Display'] text-2xl sm:text-3xl md:text-4xl font-bold text-[#0B2545] mb-2 sm:mb-3">
             {t.carousel_heading}
@@ -90,10 +90,10 @@ export const SchemeCarousel = () => {
         <style dangerouslySetInnerHTML={{__html: `
           @keyframes infinite-scroll {
             0%   { transform: translateX(0); }
-            100% { transform: translateX(calc(-50% - 0.75rem)); }
+            100% { transform: translateX(-50%); }
           }
           .animate-infinite-scroll {
-            animation: infinite-scroll 40s linear infinite;
+            animation: infinite-scroll 30s linear infinite;
           }
           .animate-infinite-scroll:hover {
             animation-play-state: paused;
@@ -103,44 +103,48 @@ export const SchemeCarousel = () => {
           }
         `}} />
 
-        <div className="flex w-max animate-infinite-scroll gap-4 sm:gap-6 px-4 sm:px-6">
-          {duplicatedSchemes.map((scheme, idx) => {
-            const Icon = scheme.icon;
-            return (
-              <div
-                key={idx}
-                className={`
-                  scheme-card w-[300px] sm:w-[340px] flex-shrink-0
-                  bg-white/60 backdrop-blur-xl border border-white rounded-[20px] p-5 sm:p-6 shadow-sm
-                  transition-all duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer
-                  ${scheme.featured
-                    ? 'border-[#10B981]/30 shadow-[0_8px_30px_rgba(16,185,129,0.15)] ring-1 ring-[#10B981]/20'
-                    : ''}
-                `}
-              >
-                <div className="flex items-start justify-between mb-4 sm:mb-6">
-                  <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#047857] flex items-center justify-center shadow-inner flex-shrink-0">
-                    <Icon size={24} className="text-white" />
+        {/* Outer clipping wrapper */}
+        <div className="overflow-hidden w-full">
+          {/* Animated marquee row */}
+          <div className="flex w-max animate-infinite-scroll gap-4 sm:gap-6 px-4 sm:px-6">
+            {duplicatedSchemes.map((scheme, idx) => {
+              const Icon = scheme.icon;
+              return (
+                <div
+                  key={idx}
+                  className={`
+                    scheme-card w-[300px] sm:w-[340px] flex-shrink-0
+                    bg-white/60 backdrop-blur-xl border border-white rounded-[20px] p-5 sm:p-6 shadow-sm
+                    transition-all duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer
+                    ${scheme.featured
+                      ? 'border-[#10B981]/30 shadow-[0_8px_30px_rgba(16,185,129,0.15)] ring-1 ring-[#10B981]/20'
+                      : ''}
+                  `}
+                >
+                  <div className="flex items-start justify-between mb-4 sm:mb-6">
+                    <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#047857] flex items-center justify-center shadow-inner flex-shrink-0">
+                      <Icon size={24} className="text-white" />
+                    </div>
+                    <span className="px-3 py-1 bg-[#10B981]/10 text-[#10B981] text-xs font-bold rounded-full uppercase tracking-wider">
+                      {scheme.tag}
+                    </span>
                   </div>
-                  <span className="px-3 py-1 bg-[#10B981]/10 text-[#10B981] text-xs font-bold rounded-full uppercase tracking-wider">
-                    {scheme.tag}
-                  </span>
+
+                  <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-[#111827] mb-2 sm:mb-3">
+                    {scheme.title}
+                  </h3>
+
+                  <p className="font-['DM_Sans'] text-[#111827]/60 text-sm leading-relaxed mb-4 sm:mb-6">
+                    {scheme.subtitle}
+                  </p>
+
+                  <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-[#F59E0B] to-[#10B981] w-1/3 rounded-full" />
+                  </div>
                 </div>
-
-                <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-[#111827] mb-2 sm:mb-3">
-                  {scheme.title}
-                </h3>
-
-                <p className="font-['DM_Sans'] text-[#111827]/60 text-sm leading-relaxed mb-4 sm:mb-6">
-                  {scheme.subtitle}
-                </p>
-
-                <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#F59E0B] to-[#10B981] w-1/3 rounded-full" />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 

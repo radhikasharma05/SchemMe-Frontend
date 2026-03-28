@@ -85,39 +85,40 @@ export const Hero = () => {
               100% { transform: translateX(-50%); }
             }
             .animate-scroll-left {
-              animation: scroll-left 40s linear infinite;
+              animation: scroll-left 30s linear infinite;
+            }
+            .animate-scroll-left:hover {
+              animation-play-state: paused;
             }
             @media (max-width: 640px) {
               .hero-card-std { width: 160px !important; height: 200px !important; }
-              .hero-card-lg  { width: 190px !important; height: 230px !important; }
             }
             @media (min-width: 641px) and (max-width: 1023px) {
               .hero-card-std { width: 200px !important; height: 240px !important; }
-              .hero-card-lg  { width: 230px !important; height: 270px !important; }
             }
           `}} />
 
-          <div className="flex gap-4 sm:gap-6 items-center animate-scroll-left">
+          <div className="flex w-max gap-4 sm:gap-6 items-center animate-scroll-left">
             {[...Array(2)].map((_, setIndex) => (
               <React.Fragment key={setIndex}>
-                {/* PM-KISAN Card */}
+                {/* Agriculture Card */}
                 <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
                   <img
-                    src="https://images.unsplash.com/photo-1623211269755-569fec0536d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBmYXJtZXIlMjBhZ3JpY3VsdHVyZSUyMGZpZWxkfGVufDF8fHx8MTc3NDYxODc0MXww&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="PM-KISAN"
+                    src="/src/assets/agriculture.jpg"
+                    alt="Agriculture"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">{t.hero_card_pmkisan_title}</h3>
-                    <p className="font-['DM_Sans'] text-xs text-white/90">{t.hero_card_pmkisan_sub}</p>
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">PM-KISAN</h3>
+                    <p className="font-['DM_Sans'] text-xs text-white/90">Support for Farmers</p>
                   </div>
                 </div>
 
                 {/* Scholarship Card */}
                 <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
                   <img
-                    src="https://images.unsplash.com/photo-1758525866582-5c74fb7d9378?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHdvbWFuJTIwc3R1ZHlpbmclMjBib29rc3xlbnwxfHx8fDE3NzQ2MzI4MDR8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                    src="/src/assets/scholarship.jpg"
                     alt="Scholarship"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -128,45 +129,45 @@ export const Hero = () => {
                   </div>
                 </div>
 
-                {/* Center Featured Card */}
-                <div className="hero-card-lg relative w-[280px] h-[320px] rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 group border-4 border-white/80">
+                {/* Education Card */}
+                <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
                   <img
-                    src="https://images.unsplash.com/flagged/photo-1574097656146-0b43b7660cb6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBzdHVkZW50JTIwc3R1ZHlpbmclMjBlZHVjYXRpb258ZW58MXx8fHwxNzc0NjE0MDI2fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="Scholarship"
+                    src="/src/assets/education.jpg"
+                    alt="Education"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                    <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">{t.hero_card_scholarship_title}</h3>
-                    <p className="font-['DM_Sans'] text-xs sm:text-sm text-white/90">{t.hero_card_scholarship_sub}</p>
+                    <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Scholarship</h3>
+                    <p className="font-['DM_Sans'] text-xs sm:text-sm text-white/90">Education Assistance</p>
                   </div>
                 </div>
 
-                {/* Ayushman Bharat Card */}
+                {/* Healthcare Card */}
                 <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
                   <img
-                    src="https://images.unsplash.com/photo-1758691462321-9b6c98c40f7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkb2N0b3IlMjBlbGRlcmx5JTIwcGF0aWVudCUyMGhlYWx0aGNhcmV8ZW58MXx8fHwxNzc0NTkxNzI2fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="Ayushman Bharat"
+                    src="/src/assets/healthcare.jpg"
+                    alt="Healthcare"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">{t.hero_card_ayushman_title}</h3>
-                    <p className="font-['DM_Sans'] text-xs text-white/90">{t.hero_card_ayushman_sub}</p>
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">Ayushman Bharat</h3>
+                    <p className="font-['DM_Sans'] text-xs text-white/90">Health Care for All</p>
                   </div>
                 </div>
 
-                {/* PM Awas Yojana Card */}
+                {/* Infrastructure Card */}
                 <div className="hero-card-std relative w-[240px] h-[280px] rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group">
                   <img
-                    src="https://images.unsplash.com/photo-1753161618091-b4cf35b9aa99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHdvbWFuJTIwaG9sZGluZyUyMHRhYmxldCUyMHNtaWxpbmd8ZW58MXx8fHwxNzc0NjMyODExfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="PM Awas Yojana"
+                    src="/src/assets/infrastructure.jpg"
+                    alt="Infrastructure"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">{t.hero_card_pmawas_title}</h3>
-                    <p className="font-['DM_Sans'] text-xs text-white/90">{t.hero_card_pmawas_sub}</p>
+                    <h3 className="font-['Playfair_Display'] text-base sm:text-xl font-bold text-white mb-1">PM Awas Yojana</h3>
+                    <p className="font-['DM_Sans'] text-xs text-white/90">Affordable Housing</p>
                   </div>
                 </div>
               </React.Fragment>

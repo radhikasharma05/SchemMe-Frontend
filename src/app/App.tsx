@@ -3,6 +3,7 @@ import { Hero } from './components/Hero';
 import { SchemeCarousel } from './components/SchemeCarousel';
 import { Navbar, StatsStrip, HowItWorks, CategoriesGrid, PersonalisationCTA, Footer } from './components/Sections';
 import { LanguageProvider } from './context/LanguageContext';
+import SBotWidget from './components/SBotWidget';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <PersonalisationCTA />
         </main>
         <Footer />
+        <SBotWidget />
       </div>
     </LanguageProvider>
   );
