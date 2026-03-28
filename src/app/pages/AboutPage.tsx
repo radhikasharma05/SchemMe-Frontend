@@ -24,7 +24,7 @@ const VALUES = [
 ];
 
 const STATS = [
-  { value: '500+', label: 'Schemes Indexed' },
+  { value: '4000+', label: 'Schemes Indexed' },
   { value: '2.8Cr+', label: 'Citizens Reached' },
   { value: '30+', label: 'Ministries Covered' },
   { value: '13', label: 'Languages Supported' },

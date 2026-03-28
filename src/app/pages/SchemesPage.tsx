@@ -236,7 +236,7 @@ const SchemesPage = () => {
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <span className="inline-block px-4 py-1.5 bg-[#2E9F75]/20 border border-[#2E9F75]/30 rounded-full text-[#4ecca3] text-sm font-semibold mb-4">
-              500+ Schemes Available
+              4000+ Schemes Available
             </span>
             <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl font-black text-white mb-4 leading-tight">
               Browse All <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] to-[#FF7A45]">Government Schemes</span>

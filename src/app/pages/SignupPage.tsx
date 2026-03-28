@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import {
   Mail, Lock, Eye, EyeOff, ShieldCheck, ChevronDown,
@@ -79,7 +79,8 @@ const SignupPage = () => {
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [stage, setStage] = useState<'form' | 'otp' | 'done'>('form');
 
   const [form, setForm] = useState<Form>({
     email: '', password: '', confirmPassword: '',
@@ -94,6 +95,9 @@ const SignupPage = () => {
   });
 
   const [errors, setErrors] = useState<Partial<Form>>({});
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpError, setOtpError] = useState('');
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const set = (key: keyof Form) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -130,9 +134,41 @@ const SignupPage = () => {
     setLoading(true);
     await new Promise(r => setTimeout(r, 1400));
     setLoading(false);
-    setSubmitted(true);
+    setStage('otp');
+  };
+
+  const handleOtpSubmit = async () => {
+    if (otp.some(d => d === '')) { setOtpError('Please enter all 6 digits'); return; }
+    setOtpError('');
+    setOtpLoading(true);
+    await new Promise(r => setTimeout(r, 1400));
+    setOtpLoading(false);
+    setStage('done');
     await new Promise(r => setTimeout(r, 1800));
     navigate('/login');
+  };
+
+  const handleOtpChange = (idx: number, val: string) => {
+    const digit = val.replace(/\D/g, '').slice(-1);
+    const next = [...otp];
+    next[idx] = digit;
+    setOtp(next);
+    if (digit && idx < 5) otpRefs.current[idx + 1]?.focus();
+  };
+
+  const handleOtpKey = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otp[idx] && idx > 0) otpRefs.current[idx - 1]?.focus();
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6).split('');
+    if (!digits.length) return;
+    e.preventDefault();
+    const next = [...otp];
+    digits.forEach((d, i) => { if (i < 6) next[i] = d; });
+    setOtp(next);
+    const focusIdx = Math.min(digits.length, 5);
+    otpRefs.current[focusIdx]?.focus();
   };
 
   // ── Shared class helpers ────────────────────────────────────────────────────
@@ -160,7 +196,7 @@ const SignupPage = () => {
     }`;
 
   // ── Success overlay ─────────────────────────────────────────────────────────
-  if (submitted) return (
+  if (stage === 'done') return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -173,6 +209,124 @@ const SignupPage = () => {
         <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">Account Created!</h2>
         <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">Redirecting you to login…</p>
       </motion.div>
+    </div>
+  );
+
+  // ── OTP Verification page ────────────────────────────────────────────────────
+  if (stage === 'otp') return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 relative bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
+      {/* Background blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-8%] left-[-6%] w-[450px] h-[450px] bg-[#2E9F75]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-6%] w-[500px] h-[500px] bg-[#D94F20]/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] bg-[#FFD166]/15 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <img src={logoImg} alt="SchemMe Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
+            <span className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold tracking-tight">
+              Schem<span className="text-[#D94F20]">Me</span>
+            </span>
+          </Link>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-[#0B2545]/10 border border-[#E8D5B7]/60 p-8"
+        >
+          {/* Icon */}
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2E9F75]/15 to-[#1a7a52]/10 border border-[#2E9F75]/20 flex items-center justify-center shadow-inner">
+              <Mail size={36} className="text-[#2E9F75]" />
+            </div>
+          </div>
+
+          <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold text-center mb-2">
+            Verify Your Email
+          </h2>
+          <p className="font-['DM_Sans'] text-[#0B2545]/55 text-sm text-center mb-1">
+            We've sent a 6‑digit code to
+          </p>
+          <p className="font-['DM_Sans'] text-[#2E9F75] text-sm font-bold text-center mb-7 truncate">
+            {form.email}
+          </p>
+
+          {/* OTP boxes */}
+          <div className="flex justify-center gap-3 mb-3" onPaste={handleOtpPaste}>
+            {otp.map((digit, idx) => (
+              <input
+                key={idx}
+                ref={el => { otpRefs.current[idx] = el; }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={e => handleOtpChange(idx, e.target.value)}
+                onKeyDown={e => handleOtpKey(idx, e)}
+                className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 font-['DM_Sans'] focus:outline-none transition-all ${
+                  otpError
+                    ? 'border-red-400 bg-red-50 text-red-600'
+                    : digit
+                    ? 'border-[#2E9F75] bg-[#2E9F75]/5 text-[#0B2545]'
+                    : 'border-[#E8D5B7] bg-white/80 text-[#0B2545] focus:border-[#2E9F75] focus:ring-2 focus:ring-[#2E9F75]/25'
+                }`}
+              />
+            ))}
+          </div>
+
+          {otpError && (
+            <p className="text-center text-xs text-red-500 font-['DM_Sans'] mb-4">⚠ {otpError}</p>
+          )}
+
+          {/* Submit */}
+          <button
+            id="otp-submit-btn"
+            onClick={handleOtpSubmit}
+            disabled={otpLoading}
+            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm mt-5 hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]"
+          >
+            {otpLoading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <CheckCircle2 size={17} />
+                Verify &amp; Create Account
+              </>
+            )}
+          </button>
+
+          {/* Resend */}
+          <p className="font-['DM_Sans'] text-[#0B2545]/45 text-xs text-center mt-5">
+            Didn't receive the code?{' '}
+            <button
+              id="otp-resend-btn"
+              onClick={() => setOtp(['', '', '', '', '', ''])}
+              className="text-[#2E9F75] font-semibold hover:underline transition-colors"
+            >
+              Resend OTP
+            </button>
+          </p>
+
+          {/* Trust */}
+          <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-[#0B2545]/40 font-['DM_Sans']">
+            <ShieldCheck size={12} className="text-[#2E9F75]" />
+            Your account is protected with email verification
+          </div>
+        </motion.div>
+
+        <button
+          id="otp-back-btn"
+          onClick={() => setStage('form')}
+          className="mt-5 w-full text-center font-['DM_Sans'] text-sm text-[#0B2545]/45 hover:text-[#2E9F75] transition-colors"
+        >
+          ← Back to signup
+        </button>
+      </div>
     </div>
   );
 
@@ -194,7 +348,7 @@ const SignupPage = () => {
           <Link to="/" className="inline-flex items-center gap-2 group">
             <img src={logoImg} alt="SchemMe Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
             <span className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold tracking-tight">
-              Scheme<span className="text-[#D94F20]">Me</span>
+              Schem<span className="text-[#D94F20]">Me</span>
             </span>
           </Link>
           <p className="font-['DM_Sans'] text-[#111827]/50 text-sm mt-1.5">

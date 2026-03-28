@@ -20,9 +20,9 @@ const STEPS = [
     number: '02',
     icon: Cpu,
     title: 'AI Matching Engine',
-    desc: 'Our proprietary AI scans 500+ government schemes across 30+ ministries in under 3 seconds to find your personalized matches.',
+    desc: 'Our proprietary AI scans 4000+ government schemes across 30+ ministries in under 3 seconds to find your personalized matches.',
     color: '#6366F1',
-    details: ['500+ schemes analysed instantly', 'Updated monthly with new schemes', 'No human involvement — fast & unbiased'],
+    details: ['4000+ schemes analysed instantly', 'Updated monthly with new schemes', 'No human involvement — fast & unbiased'],
   },
   {
     number: '03',
@@ -70,7 +70,7 @@ const FAQS = [
 ];
 
 const FEATURES = [
-  { icon: Shield, title: 'Verified Data', desc: 'All 500+ schemes sourced from official government portals.', color: '#2E9F75' },
+  { icon: Shield, title: 'Verified Data', desc: 'All 4000+ schemes sourced from official government portals.', color: '#2E9F75' },
   { icon: Zap, title: 'Instant Matching', desc: 'AI matches you to eligible schemes in under 3 seconds.', color: '#F59E0B' },
   { icon: Globe, title: '13 Languages', desc: 'Available in all major Indian regional languages.', color: '#6366F1' },
   { icon: Heart, title: 'Free Forever', desc: 'No charges, no subscriptions — always free for citizens.', color: '#EC4899' },
