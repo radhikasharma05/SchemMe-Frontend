@@ -19,7 +19,7 @@ export default defineConfig({
 
   build: {
     // Raise limit so the schemes data JSON doesn't abort the build
-    chunkSizeWarningLimit: 5000,
+    chunkSizeWarningLimit: 20000,
     rollupOptions: {
       output: {
         manualChunks: {

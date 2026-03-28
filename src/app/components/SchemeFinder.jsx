@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import schemesData from '../../res/schemes.json';
+import SchemeDetailModal from './SchemeDetailModal';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TOTAL_STEPS  = 6;
@@ -300,9 +301,8 @@ function StepActions({ step, onBack, onNext, onShow }) {
 }
 
 // ─── Scheme Card ──────────────────────────────────────────────────────────────
-function SchemeCard({ s, idx }) {
+function SchemeCard({ s, idx, onExplore }) {
   const [hov, setHov] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const cfg = SCHEME_CAT_CFG[s.category] || SCHEME_CAT_CFG['Other'];
 
   return (
@@ -338,7 +338,7 @@ function SchemeCard({ s, idx }) {
         </h3>
 
         <p className="font-['DM_Sans'] text-sm leading-relaxed flex-1" style={{ color:'rgba(17,24,39,0.60)' }}>
-          {expanded ? s.description : (s.description?.slice(0, 140) + (s.description?.length > 140 ? '…' : ''))}
+          {s.description?.slice(0, 140)}{s.description?.length > 140 ? '…' : ''}
         </p>
 
         {s.benefits && (
@@ -361,10 +361,10 @@ function SchemeCard({ s, idx }) {
         )}
 
         <button
-          onClick={() => setExpanded(e => !e)}
+          onClick={() => onExplore(s)}
           className="sf-know mt-1 font-['DM_Sans'] font-bold text-sm py-2.5 rounded-xl border-2 w-full focus:outline-none transition-all duration-200"
           style={{ borderColor:'#2E9F75', color:'#2E9F75', background:'transparent' }}>
-          {expanded ? 'Show Less ↑' : 'Know More →'}
+          Explore Scheme →
         </button>
       </div>
     </div>
@@ -435,11 +435,12 @@ function Pagination({ page, total, pageSize, onChange }) {
 
 // ═════════════════════════════════ MAIN ══════════════════════════════════════
 export default function SchemeFinder() {
-  const [formOpen, setFormOpen] = useState(false);
-  const [step,     setStep]     = useState(1);
-  const [ctaHover, setCtaHover] = useState(false);
-  const [page,     setPage]     = useState(1);
-  const [search,   setSearch]   = useState('');
+  const [formOpen,       setFormOpen]       = useState(false);
+  const [step,           setStep]           = useState(1);
+  const [ctaHover,       setCtaHover]       = useState(false);
+  const [page,           setPage]           = useState(1);
+  const [search,         setSearch]         = useState('');
+  const [selectedScheme, setSelectedScheme] = useState(null);
   const formRef    = useRef(null);
   const resultsRef = useRef(null);
 
@@ -956,7 +957,7 @@ export default function SchemeFinder() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {paginatedSchemes.map((s, idx) => <SchemeCard key={s.id} s={s} idx={idx} />)}
+                {paginatedSchemes.map((s, idx) => <SchemeCard key={s.id} s={s} idx={idx} onExplore={setSelectedScheme} />)}
               </div>
 
               {/* Pagination + summary */}
@@ -974,6 +975,14 @@ export default function SchemeFinder() {
             </>
           )}
         </div>
+      )}
+
+      {/* ══════ SCHEME DETAIL MODAL ══════ */}
+      {selectedScheme && (
+        <SchemeDetailModal
+          scheme={selectedScheme}
+          onClose={() => setSelectedScheme(null)}
+        />
       )}
     </section>
   );
