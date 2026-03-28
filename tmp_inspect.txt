@@ -1,0 +1,25 @@
+{
+  "isArr": true,
+  "len": 3400,
+  "keys": [
+    "id",
+    "name",
+    "slug",
+    "description",
+    "descriptionFull",
+    "benefits",
+    "eligibility",
+    "application",
+    "documents",
+    "level",
+    "category",
+    "stateName",
+    "tags"
+  ],
+  "sample": {
+    "id": 1,
+    "name": "\"Immediate Relief Assistance\" under \"Welfare and Relief for Fishermen During Lean Seasons and Natural Calamities Scheme\"",
+    "slug": "ira-wrflsncs",
+    "description": "The scheme \"Immediate Relief Assistance\" is a Sub-Component under the scheme \"Welfare and Relief for Fishermen During Lean Seasons and Natural Calamities Scheme\". The scheme is extended to all the regions of the Union territory of Puducherry. The scheme is introduced with the objective of extending ",
+    "descriptionFull": "The scheme \"Immediate Relief Assistance\" is a Sub-Component under the scheme \"Welfare and Relief for Fishermen During Lean Seasons and Natural Calamities Scheme\". The scheme is extended to all the regions of the Union territory of Puducherry. The scheme is introduced with the objective of extending financial assistance to the fishermen's families to compensate for the loss due to the missing breadwinner and to support them financially to run their family.",
+    "benefits": "₹ 1,00,000, in two installments of ₹ 50,000 each, as immediate relief assistance for the family (legal heir) of the missing fisherman.  Disbursal Initially, 50% will be extended within 3 months from the date of receipt of the application from the family (legal heir). The family (legal heir) should approach this department for the release of the balance 50% of the relief which will be deposited in the bank in a joint account in the name of kin (legal heir) and the competent authority concerned. If no further information is received about the missing person, the balance amount will be released in favour of the next of kin (legal heir), after the prescribed period of 9 months from the date of release of 1st pa
