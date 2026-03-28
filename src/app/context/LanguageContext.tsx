@@ -254,7 +254,7 @@ const EN: Translations = {
   footer_legal_terms: 'Terms of Service',
   footer_legal_help: 'Help Center',
   footer_legal_contact: 'Contact Support',
-  footer_copyright: '© 2026 Schemme Inc. All rights reserved.',
+  footer_copyright: '© 2026 SchemMe Inc. All rights reserved.',
   footer_made_in_india: 'Made in India',
   footer_secure: 'Secure Platform',
 };
@@ -371,7 +371,7 @@ const HI: Translations = {
   footer_legal_terms: 'उपयोग की शर्तें',
   footer_legal_help: 'सहायता केंद्र',
   footer_legal_contact: 'हमसे संपर्क करें',
-  footer_copyright: '© 2026 Schemme Inc. सर्वाधिकार सुरक्षित।',
+  footer_copyright: '© 2026 SchemMe Inc. सर्वाधिकार सुरक्षित।',
   footer_made_in_india: '🇮🇳 भारत में बना',
   footer_secure: 'सुरक्षित प्लेटफ़ॉर्म',
 };
@@ -488,7 +488,7 @@ const BN: Translations = {
   footer_legal_terms: 'ব্যবহারের শর্তাবলী',
   footer_legal_help: 'সহায়তা কেন্দ্র',
   footer_legal_contact: 'যোগাযোগ করুন',
-  footer_copyright: '© ২০২৬ Schemme Inc. সর্বস্বত্ব সংরক্ষিত।',
+  footer_copyright: '© ২০২৬ SchemMe Inc. সর্বস্বত্ব সংরক্ষিত।',
   footer_made_in_india: '🇮🇳 ভারতে তৈরি',
   footer_secure: 'নিরাপদ প্ল্যাটফর্ম',
 };
@@ -605,7 +605,7 @@ const TE: Translations = {
   footer_legal_terms: 'సేవా నిబంధనలు',
   footer_legal_help: 'సహాయ కేంద్రం',
   footer_legal_contact: 'సహాయం కోసం సంప్రదించండి',
-  footer_copyright: '© 2026 Schemme Inc. అన్ని హక్కులు రిజర్వ్ చేయబడ్డాయి.',
+  footer_copyright: '© 2026 SchemMe Inc. అన్ని హక్కులు రిజర్వ్ చేయబడ్డాయి.',
   footer_made_in_india: '🇮🇳 భారతదేశంలో తయారైనది',
   footer_secure: 'సురక్షిత వేదిక',
 };
@@ -722,7 +722,7 @@ const MR: Translations = {
   footer_legal_terms: 'सेवा अटी',
   footer_legal_help: 'मदत केंद्र',
   footer_legal_contact: 'संपर्क समर्थन',
-  footer_copyright: '© 2026 Schemme Inc. सर्व हक्क राखीव.',
+  footer_copyright: '© 2026 SchemMe Inc. सर्व हक्क राखीव.',
   footer_made_in_india: '🇮🇳 भारतात बनविलेले',
   footer_secure: 'सुरक्षित व्यासपीठ',
 };
@@ -839,7 +839,7 @@ const TA: Translations = {
   footer_legal_terms: 'சேவை விதிமுறைகள்',
   footer_legal_help: 'உதவி மையம்',
   footer_legal_contact: 'தொடர்பு பெறுங்கள்',
-  footer_copyright: '© 2026 Schemme Inc. அனைத்து உரிமைகளும் காப்பாற்றப்பட்டது.',
+  footer_copyright: '© 2026 SchemMe Inc. அனைத்து உரிமைகளும் காப்பாற்றப்பட்டது.',
   footer_made_in_india: '🇮🇳 இந்தியாவில் உருவாக்கப்பட்டது',
   footer_secure: 'பஞ்சுகாப்பான தளம்',
 };
