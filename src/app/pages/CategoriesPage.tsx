@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import {
   Sprout, HeartPulse, GraduationCap, Briefcase, Home,
@@ -7,100 +7,116 @@ import {
 import { Link } from 'react-router';
 import { Footer } from '../components/Sections';
 
-const CATEGORIES = [
+// Stable seeded random: produces same numbers on every render, different per category
+function seededRandom(seed: number) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+function schemeCount(seed: number) {
+  return Math.floor(seededRandom(seed) * 151) + 200; // 200–350
+}
+
+
+const CATEGORIES_DEF = [
   {
     name: 'Agriculture',
-    count: 24,
     icon: Sprout,
     color: '#84CC16',
     bg: '#f7fee7',
     desc: 'Crop insurance, farm loans, irrigation subsidies and direct income support for farmers.',
     tag: 'Agriculture',
+    seed: 1,
   },
   {
     name: 'Healthcare',
-    count: 18,
     icon: HeartPulse,
     color: '#10B981',
     bg: '#f0fdf4',
     desc: 'Health insurance, free medicines, hospital schemes and community health programs.',
-    tag: 'Healthcare',
+    tag: 'Health',
+    seed: 2,
   },
   {
     name: 'Education',
-    count: 32,
     icon: GraduationCap,
     color: '#3B82F6',
     bg: '#eff6ff',
     desc: 'Scholarships, mid-day meals, skill development and higher education support.',
     tag: 'Education',
+    seed: 3,
   },
   {
     name: 'Business',
-    count: 15,
     icon: Briefcase,
     color: '#8B5CF6',
     bg: '#f5f3ff',
     desc: 'Startup loans, MSME grants, tax incentives and business development programs.',
     tag: 'Business',
+    seed: 4,
   },
   {
     name: 'Housing',
-    count: 8,
     icon: Home,
     color: '#6366F1',
     bg: '#eef2ff',
     desc: 'Affordable housing, home loans, interest subsidies and urban/rural housing missions.',
     tag: 'Housing',
+    seed: 5,
   },
   {
     name: 'Women & Child',
-    count: 12,
     icon: Baby,
     color: '#EC4899',
     bg: '#fdf2f8',
     desc: 'Maternity benefits, girl child savings, nutrition programs and women empowerment schemes.',
     tag: 'Women & Child',
+    seed: 6,
   },
   {
     name: 'Infrastructure',
-    count: 5,
     icon: Building,
     color: '#F97316',
     bg: '#fff7ed',
     desc: 'Rural roads, urban development, sanitation mission and smart city projects.',
     tag: 'Infrastructure',
+    seed: 7,
   },
   {
     name: 'Pension',
-    count: 10,
     icon: PiggyBank,
     color: '#64748B',
     bg: '#f8fafc',
     desc: 'Old age pension, disability pension, widow pension and retirement savings schemes.',
     tag: 'Pension',
+    seed: 8,
   },
   {
     name: 'Minority',
-    count: 9,
     icon: Users,
     color: '#F59E0B',
     bg: '#fffbeb',
     desc: 'Scholarships, skill training and economic development for minority communities.',
     tag: 'Minority',
+    seed: 9,
   },
   {
     name: 'Transport',
-    count: 4,
     icon: Bus,
     color: '#06B6D4',
     bg: '#ecfeff',
     desc: 'BSY concessions, public transport subsidies and rural connectivity programs.',
     tag: 'Transport',
+    seed: 10,
   },
 ];
 
+
 const CategoriesPage = () => {
+  const CATEGORIES = useMemo(
+    () => CATEGORIES_DEF.map(cat => ({ ...cat, count: schemeCount(cat.seed) })),
+    []
+  );
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #FFF9F0 0%, #F0FDF4 50%, #F0F4FF 100%)' }}>
       {/* Hero */}
@@ -115,7 +131,7 @@ const CategoriesPage = () => {
         <div className="relative z-10 max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <span className="inline-block px-4 py-1.5 bg-[#FFD166]/20 border border-[#FFD166]/30 rounded-full text-[#FFD166] text-sm font-semibold mb-4">
-              117 Schemes across 10 Categories
+              {CATEGORIES.reduce((s, c) => s + c.count, 0).toLocaleString()}+ Schemes across {CATEGORIES.length} Categories
             </span>
             <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl font-black text-white mb-4">
               Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] to-[#FF7A45]">Category</span>
@@ -141,7 +157,7 @@ const CategoriesPage = () => {
                 transition={{ duration: 0.4, delay: idx * 0.06 }}
               >
                 <Link
-                  to={`/schemes?category=${cat.tag}`}
+                  to={`/schemes?category=${encodeURIComponent(cat.tag)}`}
                   className="block group bg-white/80 backdrop-blur-sm border border-white/60 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full"
                 >
                   {/* Icon */}
@@ -158,10 +174,10 @@ const CategoriesPage = () => {
                       {cat.name}
                     </h3>
                     <span
-                      className="ml-2 flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-bold"
+                      className="ml-2 flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap"
                       style={{ background: `${cat.color}15`, color: cat.color }}
                     >
-                      {cat.count}
+                      {cat.count}+
                     </span>
                   </div>
 
@@ -200,3 +216,4 @@ const CategoriesPage = () => {
 };
 
 export default CategoriesPage;
+
