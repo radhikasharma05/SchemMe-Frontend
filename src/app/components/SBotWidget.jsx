@@ -203,15 +203,112 @@ function timestamp() {
 }
 
 /* ── Markdown Renderer ───────────────────────────────────── */
+
+// Parse inline: **bold**, *italic*, `code`
 function parseInline(text) {
-  // Handle **bold**
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} style={{ fontWeight: 700, color: '#1b5e20' }}>{part.slice(2, -2)}</strong>;
-    }
-    return part;
+  if (typeof text !== 'string') return text;
+  const tokens = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  return tokens.map((tok, i) => {
+    if (tok.startsWith('**') && tok.endsWith('**'))
+      return <strong key={i} style={{ fontWeight: 700, color: '#1b5e20' }}>{tok.slice(2,-2)}</strong>;
+    if (tok.startsWith('*') && tok.endsWith('*'))
+      return <em key={i} style={{ color: '#2e7d32', fontStyle: 'italic' }}>{tok.slice(1,-1)}</em>;
+    if (tok.startsWith('`') && tok.endsWith('`'))
+      return <code key={i} style={{ background:'#e8f5e9', padding:'1px 5px', borderRadius:4, fontSize:12, color:'#1b5e20', fontFamily:'monospace' }}>{tok.slice(1,-1)}</code>;
+    return tok;
   });
+}
+
+// Detect if a line is a markdown table row
+const isTableRow = (l) => l.trim().startsWith('|') && l.trim().endsWith('|');
+const isSeparatorRow = (l) => /^\|[\s\-:|]+\|$/.test(l.trim());
+
+// Parse table rows into cells
+function parseTableRow(l) {
+  return l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+}
+
+// Scheme card colours by index
+const CARD_ACCENTS = [
+  { bg: '#e8f5e9', border: '#4caf50', tag: '#2e7d32', icon: '🏛️' },
+  { bg: '#e3f2fd', border: '#1976d2', tag: '#0d47a1', icon: '📋' },
+  { bg: '#fff8e1', border: '#ffa000', tag: '#e65100', icon: '💰' },
+  { bg: '#fce4ec', border: '#e91e63', tag: '#880e4f', icon: '❤️' },
+  { bg: '#f3e5f5', border: '#9c27b0', tag: '#4a148c', icon: '🎓' },
+];
+
+function SchemeTable({ headers, rows }) {
+  // If 2-col table with Scheme | Eligibility | Benefit pattern → render as cards
+  if (headers.length >= 2) {
+    return (
+      <div style={{ display:'flex', flexDirection:'column', gap:10, marginTop:8 }}>
+        {rows.map((row, ri) => {
+          const acc = CARD_ACCENTS[ri % CARD_ACCENTS.length];
+          return (
+            <div key={ri} style={{
+              background: acc.bg,
+              border: `1.5px solid ${acc.border}`,
+              borderRadius: 12,
+              padding: '10px 12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+            }}>
+              {/* Scheme name / first col as title */}
+              <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
+                <span style={{ fontSize:15 }}>{acc.icon}</span>
+                <span style={{ fontWeight:800, fontSize:13, color: acc.tag, lineHeight:1.3 }}>
+                  {parseInline(row[0] || '')}
+                </span>
+              </div>
+              {/* Remaining cols as key-value chips */}
+              <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                {headers.slice(1).map((h, ci) => (
+                  row[ci+1] ? (
+                    <div key={ci} style={{ display:'flex', gap:6, alignItems:'flex-start' }}>
+                      <span style={{
+                        background: acc.border, color:'#fff',
+                        fontSize:10, fontWeight:700, padding:'2px 7px',
+                        borderRadius:20, whiteSpace:'nowrap', flexShrink:0, marginTop:1,
+                      }}>
+                        {h}
+                      </span>
+                      <span style={{ fontSize:12.5, color:'#1a3a2a', lineHeight:1.5 }}>
+                        {parseInline(row[ci+1])}
+                      </span>
+                    </div>
+                  ) : null
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  // Fallback: plain styled table
+  return (
+    <div style={{ overflowX:'auto', marginTop:8, borderRadius:10, border:'1px solid #c8e6c9' }}>
+      <table style={{ borderCollapse:'collapse', width:'100%', fontSize:12 }}>
+        <thead>
+          <tr style={{ background:'linear-gradient(135deg,#2e7d32,#4caf50)' }}>
+            {headers.map((h,ci) => (
+              <th key={ci} style={{ color:'#fff', padding:'7px 10px', textAlign:'left', fontWeight:700 }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} style={{ background: ri%2===0 ? '#f1f8f2' : '#fff' }}>
+              {row.map((cell, ci) => (
+                <td key={ci} style={{ padding:'6px 10px', color:'#1b4332', borderBottom:'1px solid #e8f5e9' }}>
+                  {parseInline(cell)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function FormattedMessage({ text }) {
@@ -220,74 +317,149 @@ function FormattedMessage({ text }) {
   let i = 0;
 
   while (i < lines.length) {
-    const line = lines[i].trim();
+    const raw  = lines[i];
+    const line = raw.trim();
 
-    if (!line) {
-      i++;
+    // ── Skip empty lines
+    if (!line) { i++; continue; }
+
+    // ── Markdown Table block
+    if (isTableRow(line)) {
+      const tableLines = [];
+      while (i < lines.length && (isTableRow(lines[i]) || isSeparatorRow(lines[i]))) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      const nonSep = tableLines.filter(l => !isSeparatorRow(l));
+      if (nonSep.length >= 2) {
+        const headers = parseTableRow(nonSep[0]);
+        const rows    = nonSep.slice(1).map(parseTableRow);
+        elements.push(<SchemeTable key={`tbl-${elements.length}`} headers={headers} rows={rows} />);
+      } else if (nonSep.length === 1) {
+        // Single row pipe line — treat as plain text
+        elements.push(
+          <p key={`p-${elements.length}`} style={{ margin:'3px 0', fontSize:13, lineHeight:1.55, color:'#1b4332' }}>
+            {parseInline(nonSep[0].replace(/\|/g, ' '))}
+          </p>
+        );
+      }
       continue;
     }
 
-    // Numbered list: 1. or 1)
-    const numMatch = line.match(/^(\d+)[.)\s]\s*(.+)/);
+    // ── H1/H2/H3 headings: # ## ###
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const sizes = [16, 14.5, 13.5];
+      elements.push(
+        <div key={`h-${elements.length}`} style={{
+          display:'flex', alignItems:'center', gap:8,
+          background:'linear-gradient(90deg,#e8f5e9,transparent)',
+          borderLeft:`4px solid ${level===1?'#2e7d32':level===2?'#4caf50':'#81c784'}`,
+          borderRadius:'0 8px 8px 0', padding:'6px 10px',
+          margin:`${level===1?10:6}px 0 4px`,
+        }}>
+          <span style={{ fontSize: sizes[level-1]??13, fontWeight:800, color:'#1b5e20', lineHeight:1.3 }}>
+            {parseInline(headingMatch[2])}
+          </span>
+        </div>
+      );
+      i++; continue;
+    }
+
+    // ── Bold-only line as a sub-heading
+    if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
+      const txt = line.slice(2,-2);
+      elements.push(
+        <div key={`bh-${elements.length}`} style={{
+          borderLeft:'3px solid #4caf50', paddingLeft:8,
+          margin:'8px 0 3px', fontWeight:800,
+          fontSize:13, color:'#1b5e20',
+        }}>
+          {parseInline(txt)}
+        </div>
+      );
+      i++; continue;
+    }
+
+    // ── Section header (ends with colon, or ALL CAPS pattern)
+    const isHeader = (line.endsWith(':') && line.length < 80 && !line.startsWith('-'))
+      || /^[A-Z][A-Z\s&\/]{4,}:?$/.test(line);
+    if (isHeader) {
+      const headerText = line.replace(/:$/, '').trim();
+      elements.push(
+        <div key={`sh-${elements.length}`} style={{
+          display:'flex', alignItems:'center', gap:6,
+          margin:'10px 0 4px',
+        }}>
+          <span style={{ width:3, height:14, background:'#4caf50', borderRadius:2, flexShrink:0, display:'inline-block' }}/>
+          <span style={{ fontWeight:700, fontSize:12.5, color:'#1b5e20', letterSpacing:0.3, textTransform:'uppercase' }}>
+            {headerText}
+          </span>
+        </div>
+      );
+      i++; continue;
+    }
+
+    // ── Numbered list
+    const numMatch = line.match(/^(\d+)[.)]\s*(.+)/);
     if (numMatch) {
       elements.push(
-        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', margin: '4px 0' }}>
+        <div key={`n-${elements.length}`} style={{ display:'flex', gap:8, alignItems:'flex-start', margin:'4px 0' }}>
           <span style={{
-            minWidth: 22, height: 22, borderRadius: '50%',
-            background: 'linear-gradient(135deg,#2e7d32,#4caf50)',
-            color: '#fff', fontSize: 11, fontWeight: 700,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            minWidth:20, height:20, borderRadius:'50%',
+            background:'linear-gradient(135deg,#2e7d32,#4caf50)',
+            color:'#fff', fontSize:11, fontWeight:800,
+            display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
           }}>{numMatch[1]}</span>
-          <span style={{ fontSize: 13, lineHeight: 1.5, color: '#1b4332' }}>{parseInline(numMatch[2])}</span>
+          <span style={{ fontSize:13, lineHeight:1.5, color:'#1b4332' }}>{parseInline(numMatch[2])}</span>
         </div>
       );
-      i++;
-      continue;
+      i++; continue;
     }
 
-    // Bullet list: - or •
-    const bulletMatch = line.match(/^[-•*]\s+(.+)/);
+    // ── Bullet list
+    const bulletMatch = line.match(/^[-•*➤▸]\s+(.+)/);
     if (bulletMatch) {
       elements.push(
-        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', margin: '3px 0' }}>
+        <div key={`b-${elements.length}`} style={{ display:'flex', gap:8, alignItems:'flex-start', margin:'3px 0' }}>
           <span style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: '#4caf50', flexShrink: 0, marginTop: 5,
+            width:7, height:7, borderRadius:'50%', background:'#4caf50',
+            flexShrink:0, marginTop:5,
           }}/>
-          <span style={{ fontSize: 13, lineHeight: 1.5, color: '#1b4332' }}>{parseInline(bulletMatch[1])}</span>
+          <span style={{ fontSize:13, lineHeight:1.5, color:'#1b4332' }}>{parseInline(bulletMatch[1])}</span>
         </div>
       );
-      i++;
-      continue;
+      i++; continue;
     }
 
-    // Section header: line ending with colon or all-caps label
-    const isHeader = line.endsWith(':') || /^[A-Z][A-Za-z &]+:$/.test(line);
-    if (isHeader || (line.startsWith('**') && line.endsWith('**'))) {
-      const headerText = line.replace(/\*\*/g, '').replace(/:$/, '');
+    // ── Key: Value inline pairs (e.g. "Benefit: ₹6,000/year")
+    const kvMatch = line.match(/^([^:]{2,40}):\s+(.+)/);
+    if (kvMatch && !line.startsWith('http')) {
       elements.push(
-        <div key={i} style={{
-          borderLeft: '3px solid #4caf50', paddingLeft: 8,
-          margin: '8px 0 3px', fontWeight: 700,
-          fontSize: 12.5, color: '#1b5e20', letterSpacing: 0.2,
-        }}>
-          {headerText}
+        <div key={`kv-${elements.length}`} style={{ display:'flex', gap:6, alignItems:'flex-start', margin:'3px 0' }}>
+          <span style={{
+            background:'#e8f5e9', color:'#2e7d32', fontSize:11, fontWeight:700,
+            padding:'2px 8px', borderRadius:20, whiteSpace:'nowrap', flexShrink:0, marginTop:1,
+          }}>
+            {kvMatch[1]}
+          </span>
+          <span style={{ fontSize:13, color:'#1b4332', lineHeight:1.5 }}>{parseInline(kvMatch[2])}</span>
         </div>
       );
-      i++;
-      continue;
+      i++; continue;
     }
 
-    // Plain text paragraph
+    // ── Plain text
     elements.push(
-      <p key={i} style={{ margin: '3px 0', fontSize: 13, lineHeight: 1.55, color: '#1b4332' }}>
+      <p key={`p-${elements.length}`} style={{ margin:'3px 0', fontSize:13, lineHeight:1.6, color:'#1b4332' }}>
         {parseInline(line)}
       </p>
     );
     i++;
   }
 
-  return <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>{elements}</div>;
+  return <div style={{ display:'flex', flexDirection:'column', gap:2 }}>{elements}</div>;
 }
 
 const QUICK_REPLIES = [
