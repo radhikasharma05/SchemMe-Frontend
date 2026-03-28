@@ -1,12 +1,9 @@
-import image_7f5e0fee18015700bb712cd959957fea12d80504 from 'figma:asset/7f5e0fee18015700bb712cd959957fea12d80504.png'
-import image_c512d0fe078cfb783d5b5e125549a01da120883c from 'figma:asset/c512d0fe078cfb783d5b5e125549a01da120883c.png'
-import image_ed00409f87186415fd4cfe9d98c65547b16a72cc from 'figma:asset/ed00409f87186415fd4cfe9d98c65547b16a72cc.png'
 import React from 'react';
 import { motion } from 'motion/react';
 import {
   Sprout, HeartPulse, GraduationCap, Briefcase, Home,
   Baby, Building, PiggyBank, Users, Bus, ArrowRight,
-  FileText, Cpu, CheckCircle, Search, ShieldCheck
+  FileText, Cpu, CheckCircle, Search, ShieldCheck, Leaf
 } from 'lucide-react';
 
 // Logo Component
@@ -14,12 +11,8 @@ const SchemeLogo = () => (
   <div className="flex items-center gap-2">
     <div className="relative">
       {/* Icon Circle */}
-      <div className="w-12 h-12 flex items-center justify-center">
-        <img 
-          src={image_7f5e0fee18015700bb712cd959957fea12d80504}
-          alt="SchemeMe Logo"
-          className="w-full h-full object-contain m-[0px]"
-        />
+      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2E9F75] to-[#1a5c42] flex items-center justify-center shadow-md">
+        <Leaf size={20} className="text-white" />
       </div>
     </div>
     {/* Text Logo */}
