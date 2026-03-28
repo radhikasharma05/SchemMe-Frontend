@@ -202,6 +202,94 @@ function timestamp() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+/* ── Markdown Renderer ───────────────────────────────────── */
+function parseInline(text) {
+  // Handle **bold**
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} style={{ fontWeight: 700, color: '#1b5e20' }}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function FormattedMessage({ text }) {
+  const lines = text.split('\n');
+  const elements = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+
+    if (!line) {
+      i++;
+      continue;
+    }
+
+    // Numbered list: 1. or 1)
+    const numMatch = line.match(/^(\d+)[.)\s]\s*(.+)/);
+    if (numMatch) {
+      elements.push(
+        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', margin: '4px 0' }}>
+          <span style={{
+            minWidth: 22, height: 22, borderRadius: '50%',
+            background: 'linear-gradient(135deg,#2e7d32,#4caf50)',
+            color: '#fff', fontSize: 11, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>{numMatch[1]}</span>
+          <span style={{ fontSize: 13, lineHeight: 1.5, color: '#1b4332' }}>{parseInline(numMatch[2])}</span>
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // Bullet list: - or •
+    const bulletMatch = line.match(/^[-•*]\s+(.+)/);
+    if (bulletMatch) {
+      elements.push(
+        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', margin: '3px 0' }}>
+          <span style={{
+            width: 7, height: 7, borderRadius: '50%',
+            background: '#4caf50', flexShrink: 0, marginTop: 5,
+          }}/>
+          <span style={{ fontSize: 13, lineHeight: 1.5, color: '#1b4332' }}>{parseInline(bulletMatch[1])}</span>
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // Section header: line ending with colon or all-caps label
+    const isHeader = line.endsWith(':') || /^[A-Z][A-Za-z &]+:$/.test(line);
+    if (isHeader || (line.startsWith('**') && line.endsWith('**'))) {
+      const headerText = line.replace(/\*\*/g, '').replace(/:$/, '');
+      elements.push(
+        <div key={i} style={{
+          borderLeft: '3px solid #4caf50', paddingLeft: 8,
+          margin: '8px 0 3px', fontWeight: 700,
+          fontSize: 12.5, color: '#1b5e20', letterSpacing: 0.2,
+        }}>
+          {headerText}
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // Plain text paragraph
+    elements.push(
+      <p key={i} style={{ margin: '3px 0', fontSize: 13, lineHeight: 1.55, color: '#1b4332' }}>
+        {parseInline(line)}
+      </p>
+    );
+    i++;
+  }
+
+  return <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>{elements}</div>;
+}
+
 const QUICK_REPLIES = [
   { label: "🏛️ Find Schemes",  value: "government schemes" },
   { label: "🌐 Our Services",  value: "services"           },
@@ -243,6 +331,8 @@ export default function SBotWidget({ avatarSrc = undefined }) {
   const walkTimer   = useRef(null);
   const waveTimer   = useRef(null);
   const danceTimer  = useRef(null);
+  const chatRef     = useRef(null);
+  const robotRef    = useRef(null);
 
   /* Scroll → walk across screen */
   useEffect(() => {
@@ -312,6 +402,20 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     return () => clearInterval(t);
   }, [isOpen]);
 
+  /* Click-outside → close chat */
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleMouseDown = (e) => {
+      const clickedChat  = chatRef.current  && chatRef.current.contains(e.target);
+      const clickedRobot = robotRef.current && robotRef.current.contains(e.target);
+      if (!clickedChat && !clickedRobot) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [isOpen]);
+
   /* Auto-scroll */
   useEffect(() => { msgsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typing]);
 
@@ -356,8 +460,23 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     : <MiniRobot size={size}/>;
 
   /* Position helpers */
+  const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
+  const CHAT_HEIGHT   = 500;           // chat window height
+  const CHAT_WIDTH    = 360;           // chat window width
+  const ROBOT_BOTTOM  = 16;            // robot bottom offset
+  const ROBOT_HEIGHT  = 148;           // robot SVG height
+
   const rLeft    = robotLeft;
-  const chatLeft = Math.max(10, Math.min(rLeft - 250, window.innerWidth - 375));
+  // Keep chat horizontally inside the viewport with 10 px margins
+  const chatLeft = Math.max(10, Math.min(rLeft - 250, window.innerWidth - CHAT_WIDTH - 10));
+  // Position chat above the robot; clamp so it never goes above the navbar
+  const chatBottomRaw = ROBOT_BOTTOM + ROBOT_HEIGHT + 16;
+  // Maximum allowed bottom = viewport height − navbar height − chat height
+  const chatBottomMax = window.innerHeight - NAVBAR_HEIGHT - CHAT_HEIGHT;
+  const chatBottom   = Math.max(chatBottomMax > 0 ? chatBottomMax : 0, chatBottomRaw) > chatBottomRaw
+    ? chatBottomRaw
+    : Math.max(0, chatBottomMax);
+
   const wrapAnim = isDancing ? 'sbot-dance' : isWalking ? 'sbot-walk' : 'sbot-idle';
 
   /* ── JSX ── */
@@ -366,7 +485,7 @@ export default function SBotWidget({ avatarSrc = undefined }) {
       <style>{STYLES}</style>
 
       {/* ════ FLOATING ROBOT ════ */}
-      <div style={{
+      <div ref={robotRef} style={{
         position: 'fixed', bottom: 16, left: rLeft,
         zIndex: 9999,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -424,9 +543,12 @@ export default function SBotWidget({ avatarSrc = undefined }) {
 
       {/* ════ CHAT WINDOW ════ */}
       {isOpen && (
-        <div className="sbot-win" style={{
-          position: 'fixed', bottom: 200, left: chatLeft,
-          width: 'min(360px, calc(100vw - 20px))', height: 500,
+        <div ref={chatRef} className="sbot-win" style={{
+          position: 'fixed',
+          bottom: chatBottom,
+          left: chatLeft,
+          width: `min(${CHAT_WIDTH}px, calc(100vw - 20px))`,
+          height: Math.min(CHAT_HEIGHT, window.innerHeight - NAVBAR_HEIGHT - 20),
           borderRadius: 18, boxShadow: '0 24px 64px rgba(0,0,0,.21)',
           background: '#fff', display: 'flex', flexDirection: 'column',
           overflow: 'hidden', zIndex: 9998,
@@ -484,11 +606,13 @@ export default function SBotWidget({ avatarSrc = undefined }) {
                   <div style={{
                     background: msg.from==='bot' ? '#e8f5e9' : '#1a3a6b',
                     color:      msg.from==='bot' ? '#1b5e20' : '#fff',
-                    padding:'9px 13px',
+                    padding: msg.from==='bot' ? '10px 14px' : '9px 13px',
                     borderRadius: msg.from==='bot' ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
                     fontSize:13.5, lineHeight:1.55, wordBreak:'break-word',
                     boxShadow:'0 1px 4px rgba(0,0,0,.07)',
-                  }}>{msg.text}</div>
+                  }}>
+                    {msg.from === 'bot' ? <FormattedMessage text={msg.text} /> : msg.text}
+                  </div>
                   <div style={{
                     fontSize:10, color:'#9e9e9e', marginTop:3,
                     textAlign: msg.from==='bot' ? 'left' : 'right',

@@ -199,7 +199,7 @@ export const Navbar = () => {
 export const StatsStrip = () => {
   const { t } = useLanguage();
   const stats = [
-    { label: t.stat_schemes_label, value: '500+' },
+    { label: t.stat_schemes_label, value: '4000+' },
     { label: t.stat_beneficiaries_label, value: '2.8Cr+' },
     { label: t.stat_verified_label, value: '100%' },
     { label: t.stat_ai_label, value: '24/7' },
