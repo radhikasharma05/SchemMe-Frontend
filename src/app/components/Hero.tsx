@@ -85,7 +85,10 @@ export const Hero = () => {
               100% { transform: translateX(-50%); }
             }
             .animate-scroll-left {
-              animation: scroll-left 40s linear infinite;
+              animation: scroll-left 30s linear infinite;
+            }
+            .animate-scroll-left:hover {
+              animation-play-state: paused;
             }
             @media (max-width: 640px) {
               .hero-card-std { width: 160px !important; height: 200px !important; }
@@ -95,7 +98,7 @@ export const Hero = () => {
             }
           `}} />
 
-          <div className="flex gap-4 sm:gap-6 items-center animate-scroll-left">
+          <div className="flex w-max gap-4 sm:gap-6 items-center animate-scroll-left">
             {[...Array(2)].map((_, setIndex) => (
               <React.Fragment key={setIndex}>
                 {/* Agriculture Card */}
