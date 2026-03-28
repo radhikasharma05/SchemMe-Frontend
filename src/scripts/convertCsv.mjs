@@ -95,6 +95,8 @@ const COL = {
   details:     2,
   benefits:    3,
   eligibility: 4,
+  application: 5,
+  documents:   6,
   level:       7,
   category:    8,
   stateName:   11,
@@ -118,13 +120,16 @@ for (const row of dataRows) {
   schemes.push({
     id,
     name,
-    slug:        fix(row[COL.slug]),
-    description: fix(row[COL.details]).slice(0, 300),   // truncate for card
-    benefits:    fix(row[COL.benefits]).slice(0, 250),
-    eligibility: fix(row[COL.eligibility]).slice(0, 300),
-    level:       fix(row[COL.level]),                    // "Central" | "State"
-    category:    normCat(row[COL.category] || ''),
-    stateName:   fix(row[COL.stateName]),                // e.g. "Rajasthan"
+    slug:           fix(row[COL.slug]),
+    description:    fix(row[COL.details]).slice(0, 300),     // truncated – card preview
+    descriptionFull:fix(row[COL.details]),                   // full – modal
+    benefits:       fix(row[COL.benefits]),                  // full benefits
+    eligibility:    fix(row[COL.eligibility]),               // full eligibility
+    application:    fix(row[COL.application]),               // how to apply steps
+    documents:      fix(row[COL.documents]),                 // required documents
+    level:          fix(row[COL.level]),                     // "Central" | "State"
+    category:       normCat(row[COL.category] || ''),
+    stateName:      fix(row[COL.stateName]),                 // e.g. "Rajasthan"
     tags,
   });
   id++;
