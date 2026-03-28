@@ -4,7 +4,7 @@ import {
   Sprout, HeartPulse, GraduationCap, Briefcase, Home,
   Baby, Building, PiggyBank, Users, Bus, ArrowRight,
   FileText, Cpu, CheckCircle, Search, ShieldCheck,
-  UserCircle, LogIn, Globe, ChevronDown, Check
+  UserCircle, LogIn, UserPlus, Globe, ChevronDown, Check
 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
@@ -136,13 +136,22 @@ export const Navbar = () => {
             <span className="hidden sm:inline whitespace-nowrap">{t.nav_my_account}</span>
           </button>
         ) : (
-          <button
-            onClick={() => navigate('/login')}
-            className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all shadow-md whitespace-nowrap"
-          >
-            <LogIn size={15} className="flex-shrink-0" />
-            <span>{t.nav_login}</span>
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => navigate('/login')}
+              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all shadow-md whitespace-nowrap"
+            >
+              <LogIn size={15} className="flex-shrink-0" />
+              <span>{t.nav_login}</span>
+            </button>
+            <button
+              onClick={() => navigate('/signup')}
+              className="flex items-center gap-1.5 sm:gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all whitespace-nowrap"
+            >
+              <UserPlus size={15} className="flex-shrink-0" />
+              <span>Sign Up</span>
+            </button>
+          </div>
         )}
       </div>
 
