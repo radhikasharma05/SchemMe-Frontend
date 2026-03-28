@@ -1,11 +1,13 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import {
   Mail, Lock, Eye, EyeOff, ShieldCheck, ChevronDown,
-  UserPlus, LogIn, CheckCircle2,
+  UserPlus, LogIn, CheckCircle2, User,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import logoImg from '../../assets/logo.png';
+
+const API_BASE = 'http://192.168.137.1:3000/api';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -34,6 +36,7 @@ const INCOME_RANGES = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Form = {
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -48,6 +51,7 @@ type Form = {
   bpl: string;
   annualIncome: string;
 };
+
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -81,9 +85,10 @@ const SignupPage = () => {
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [stage, setStage] = useState<'form' | 'otp' | 'done'>('form');
+  const [apiError, setApiError] = useState('');  // server-side error message
 
   const [form, setForm] = useState<Form>({
-    email: '', password: '', confirmPassword: '',
+    name: '', email: '', password: '', confirmPassword: '',
     gender: '', age: '',
     maritalStatus: '',
     residenceType: '', state: '',
@@ -93,6 +98,7 @@ const SignupPage = () => {
     bpl: '',
     annualIncome: '',
   });
+
 
   const [errors, setErrors] = useState<Partial<Form>>({});
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -109,6 +115,7 @@ const SignupPage = () => {
   // ── Validation ──────────────────────────────────────────────────────────────
   const validate = (): Partial<Form> => {
     const e: Partial<Form> = {};
+    if (!form.name.trim()) e.name = 'Enter your full name';
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email address';
     if (form.password.length < 6) e.password = 'Minimum 6 characters';
     if (form.confirmPassword !== form.password) e.confirmPassword = 'Passwords do not match';
@@ -126,27 +133,67 @@ const SignupPage = () => {
     return e;
   };
 
+  // ── POST /api/signup ────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
+    setApiError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
-    setLoading(false);
-    setStage('otp');
+    try {
+      const res = await fetch(`${API_BASE}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:     form.name.trim(),
+          email:    form.email.trim(),
+          password: form.password,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setApiError(data.message || data.error || `Signup failed (${res.status})`);
+        return;
+      }
+      // Success → show OTP stage
+      setStage('otp');
+    } catch {
+      setApiError('Network error — make sure the server is running.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ── POST /api/verify-otp ────────────────────────────────────────────────────
   const handleOtpSubmit = async () => {
     if (otp.some(d => d === '')) { setOtpError('Please enter all 6 digits'); return; }
     setOtpError('');
     setOtpLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
-    setOtpLoading(false);
-    setStage('done');
-    await new Promise(r => setTimeout(r, 1800));
-    navigate('/login');
+    try {
+      const res = await fetch(`${API_BASE}/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email.trim(),
+          otp:   otp.join(''),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setOtpError(data.message || data.error || 'Invalid OTP. Please try again.');
+        return;
+      }
+      // OTP verified — show success then redirect to login
+      setStage('done');
+      setTimeout(() => navigate('/login'), 1800);
+    } catch {
+      setOtpError('Network error — please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
   };
+
 
   const handleOtpChange = (idx: number, val: string) => {
     const digit = val.replace(/\D/g, '').slice(-1);
@@ -367,6 +414,23 @@ const SignupPage = () => {
           >
             <SectionHeader step={1} title="Account Credentials" subtitle="Enter your email address and a strong password" />
             <div className="space-y-4">
+              {/* Full Name */}
+              <div>
+                <Label>Full Name</Label>
+                <div className="relative">
+                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0B2545]/30" />
+                  <input
+                    id="signup-name"
+                    type="text"
+                    placeholder="e.g. Rahul Sharma"
+                    value={form.name}
+                    onChange={set('name')}
+                    className={`${inputCls('name')} pl-10`}
+                  />
+                </div>
+                <ErrorMsg msg={errors.name} />
+              </div>
+
               {/* Email */}
               <div>
                 <Label>Email Address</Label>
@@ -683,3 +747,5 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
+
+

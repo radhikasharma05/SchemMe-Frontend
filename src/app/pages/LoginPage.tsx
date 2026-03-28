@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Eye, EyeOff, LogIn, Mail, Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import logoImg from '../../assets/logo.png';
+
+const API_BASE = 'http://192.168.137.1:3000/api';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
   const navigate = useNavigate();
 
   const validate = () => {
@@ -134,6 +137,13 @@ const LoginPage = () => {
                 </button>
               </div>
 
+              {/* API Error */}
+              {apiError && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold px-4 py-3 rounded-xl font-['DM_Sans']">
+                  ⚠ {apiError}
+                </div>
+              )}
+
               {/* Submit button */}
               <button
                 type="submit"
@@ -190,3 +200,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
