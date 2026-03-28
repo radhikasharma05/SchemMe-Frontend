@@ -1,14 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'motion/react';
 import {
   Sprout, HeartPulse, GraduationCap, Briefcase, Home,
   Baby, Building, PiggyBank, Users, Bus, ArrowRight,
   FileText, Cpu, CheckCircle, Search, ShieldCheck,
-  UserCircle, LogIn, UserPlus, Globe, ChevronDown, Check
+  UserCircle, LogIn, UserPlus, Globe, ChevronDown, Check, X
 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
+import localSchemes from '../../res/schemes.json';
+
+// ─── Scheme type for search ───────────────────────────────────────────────────
+interface RawScheme {
+  id: number;
+  name: string;
+  slug?: string;
+  description?: string;
+  descriptionFull?: string;
+  benefits?: string;
+  eligibility?: string;
+  category?: string;
+  level?: string;
+  stateName?: string;
+  tags?: string[];
+}
 
 // ─── Shared seeded-random scheme count (200-350) ──────────────────────────────
 function _seededRandom(seed: number) {
@@ -34,6 +50,30 @@ const SchemeLogo = () => (
   </div>
 );
 
+// ─── Navbar Search Hook ───────────────────────────────────────────────────────
+function useSchemeSearch() {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<RawScheme[]>([]);
+  const [open, setOpen] = useState(false);
+  const schemes = localSchemes as RawScheme[];
+
+  const search = useCallback((q: string) => {
+    setQuery(q);
+    if (!q.trim()) { setResults([]); setOpen(false); return; }
+    const lower = q.toLowerCase();
+    const hits = schemes.filter(s =>
+      (s.name || '').toLowerCase().includes(lower) ||
+      (s.description || '').toLowerCase().includes(lower) ||
+      (s.category || '').toLowerCase().includes(lower) ||
+      (Array.isArray(s.tags) && s.tags.some(tag => tag.toLowerCase().includes(lower)))
+    ).slice(0, 8);
+    setResults(hits);
+    setOpen(hits.length > 0);
+  }, [schemes]);
+
+  return { query, setQuery: search, results, open, setOpen };
+}
+
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 export const Navbar = () => {
   // Replace with real auth state from your auth context/store
@@ -46,16 +86,51 @@ export const Navbar = () => {
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Search state
+  const { query, setQuery, results, open, setOpen } = useSchemeSearch();
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
+  const [highlighted, setHighlighted] = useState(-1);
+
+  // Close lang dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) {
         setLangOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  }, [setOpen]);
+
+  const goToScheme = (scheme: RawScheme) => {
+    setOpen(false);
+    setQuery('');
+    navigate(`/schemes?q=${encodeURIComponent(scheme.name)}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!open) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlighted(h => Math.min(h + 1, results.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlighted(h => Math.max(h - 1, 0)); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (highlighted >= 0 && results[highlighted]) { goToScheme(results[highlighted]); }
+      else if (query.trim()) { setOpen(false); navigate(`/schemes?q=${encodeURIComponent(query.trim())}`); setQuery(''); }
+    }
+    else if (e.key === 'Escape') { setOpen(false); }
+  };
+
+  const CAT_COLORS: Record<string, string> = {
+    Agriculture:'#059669', Health:'#2563eb', Education:'#d97706',
+    Business:'#0d9488', Banking:'#0d9488', Housing:'#4f46e5',
+    'Social Welfare':'#7c3aed', Skills:'#ea580c', Transport:'#ea580c',
+    Tourism:'#d97706', Sports:'#dc2626', Science:'#1d4ed8',
+    Law:'#374151', Utility:'#0891b2', 'Women & Child':'#db2777',
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 shadow-lg" style={{ background: 'rgba(11,37,69,0.97)', backdropFilter: 'blur(12px)' }}>
@@ -72,18 +147,110 @@ export const Navbar = () => {
 
         {/* Search – centre */}
         <div className="flex-1 min-w-0">
-          <div className="relative w-full max-w-xl mx-auto">
+          <div ref={searchRef} className="relative w-full max-w-xl mx-auto">
+            <Search size={14} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.45)', pointerEvents: 'none' }} />
             <input
+              ref={inputRef}
               type="text"
+              value={query}
+              onChange={e => { setQuery(e.target.value); setHighlighted(-1); }}
+              onKeyDown={handleKeyDown}
+              onFocus={() => { if (results.length > 0) setOpen(true); }}
               placeholder={t.nav_search_placeholder}
-              className="w-full pl-4 pr-10 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/50 font-['DM_Sans'] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2E9F75]/60 focus:border-[#2E9F75]/40 transition-all"
+              className="w-full pl-9 pr-10 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/50 font-['DM_Sans'] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2E9F75]/60 focus:border-[#2E9F75]/40 transition-all"
             />
-            <button
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white w-7 h-7 flex items-center justify-center rounded-full hover:shadow-md transition-all"
-              aria-label="Search"
-            >
-              <Search size={13} />
-            </button>
+            {query ? (
+              <button
+                onClick={() => { setQuery(''); setOpen(false); inputRef.current?.focus(); }}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white/15 text-white w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/25 transition-all"
+                aria-label="Clear search"
+              >
+                <X size={12} />
+              </button>
+            ) : (
+              <button
+                onClick={() => { if (query.trim()) navigate(`/schemes?q=${encodeURIComponent(query.trim())}`); else navigate('/schemes'); }}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white w-7 h-7 flex items-center justify-center rounded-full hover:shadow-md transition-all"
+                aria-label="Search"
+              >
+                <Search size={13} />
+              </button>
+            )}
+
+            {/* ── Search Dropdown ── */}
+            {open && results.length > 0 && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
+                background: '#0B2545', border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
+                zIndex: 1000,
+              }}>
+                {/* header */}
+                <div style={{ padding: '10px 16px 8px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Schemes matching "{query}"
+                  </span>
+                  <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+                    {results.length} result{results.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {results.map((scheme, idx) => {
+                  const catColor = CAT_COLORS[scheme.category || ''] || '#2E9F75';
+                  return (
+                    <button
+                      key={scheme.id}
+                      onClick={() => goToScheme(scheme)}
+                      onMouseEnter={() => setHighlighted(idx)}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12,
+                        padding: '10px 16px', textAlign: 'left', border: 'none', cursor: 'pointer',
+                        background: highlighted === idx ? 'rgba(46,159,117,0.15)' : 'transparent',
+                        borderBottom: idx < results.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: `${catColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                        <Search size={13} color={catColor} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          {scheme.name}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                          {scheme.category && (
+                            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, fontWeight: 800, paddingInline: 7, paddingBlock: 2, borderRadius: 99, background: `${catColor}22`, color: catColor }}>
+                              {scheme.category}
+                            </span>
+                          )}
+                          {scheme.level && (
+                            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
+                              {scheme.level === 'Central' ? '🏛️ Central' : `📍 ${scheme.stateName || 'State'}`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                {/* footer: see all results */}
+                <button
+                  onClick={() => { navigate(`/schemes?q=${encodeURIComponent(query.trim())}`); setOpen(false); setQuery(''); }}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '10px 16px', border: 'none', cursor: 'pointer',
+                    background: 'rgba(46,159,117,0.12)', borderTop: '1px solid rgba(46,159,117,0.20)',
+                    fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 800, color: '#2E9F75',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(46,159,117,0.22)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(46,159,117,0.12)')}
+                >
+                  See all results for "{query}" →
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, RefreshCw, AlertCircle } from 'lucide-react';
+import { Search, X, RefreshCw, AlertCircle, ChevronDown } from 'lucide-react';
 import { Footer } from '../components/Sections';
 import SchemeDetailModal from '../components/SchemeDetailModal';
 import localSchemes from '../../res/schemes.json';
@@ -237,11 +237,16 @@ export default function SchemesPage() {
   };
 
   const [activeCategory, setActiveCategory] = useState(initCategory);
-  const [searchQuery,    setSearchQuery]    = useState('');
+  const [searchQuery,    setSearchQuery]    = useState(() => {
+    // Pre-fill search from ?q= URL param
+    const params = new URLSearchParams(location.search);
+    return params.get('q') || '';
+  });
   const [schemes,        setSchemes]        = useState<ApiScheme[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState<string | null>(null);
   const [selectedScheme, setSelectedScheme] = useState<ApiScheme | null>(null);
+  const [visibleCount,   setVisibleCount]   = useState(24); // Pagination
 
   // ── Fetch schemes from API ─────────────────────────────────────────────────
   const fetchSchemes = useCallback(async (cat: typeof CATEGORIES[0]) => {
@@ -277,20 +282,37 @@ export default function SchemesPage() {
     fetchSchemes(activeCategory);
   }, [activeCategory, fetchSchemes]);
 
+  // When ?q= changes (e.g. navigated from navbar search) update searchQuery
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q') || '';
+    if (q !== searchQuery) setSearchQuery(q);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
+  // Reset pagination when search/category changes
+  useEffect(() => { setVisibleCount(24); }, [searchQuery, activeCategory]);
+
   // ── Client-side search filter ──────────────────────────────────────────────
-  const filtered = searchQuery.trim()
-    ? schemes.filter(s => {
-        const q = searchQuery.toLowerCase();
-        const schemeName = (s.scheme_name || s.name || s.title || '').toLowerCase();
-        return (
-          schemeName.includes(q) ||
-          (s.description || '').toLowerCase().includes(q) ||
-          (s.benefits || '').toLowerCase().includes(q) ||
-          (s.category || '').toLowerCase().includes(q) ||
-          (Array.isArray(s.tags) && s.tags.some((t: string) => t.includes(q)))
-        );
-      })
-    : schemes;
+  const filtered = useMemo(() => {
+    if (!searchQuery.trim()) return schemes;
+    const q = searchQuery.toLowerCase();
+    return schemes.filter(s => {
+      const schemeName = (s.scheme_name || s.name || s.title || '').toLowerCase();
+      return (
+        schemeName.includes(q) ||
+        (s.description || '').toLowerCase().includes(q) ||
+        (s.benefits || '').toLowerCase().includes(q) ||
+        (s.eligibility || '').toLowerCase().includes(q) ||
+        (s.category || '').toLowerCase().includes(q) ||
+        (s.stateName || '').toLowerCase().includes(q) ||
+        (Array.isArray(s.tags) && s.tags.some((t: string) => t.toLowerCase().includes(q)))
+      );
+    });
+  }, [schemes, searchQuery]);
+
+  const visibleSchemes = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   const activeCfg = CAT_CFG[activeCategory.label] || CAT_CFG['Other'];
 
@@ -474,14 +496,14 @@ export default function SchemesPage() {
                 layout
                 style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}
               >
-                {filtered.map((scheme, idx) => (
+                {visibleSchemes.map((scheme, idx) => (
                   <motion.div
                     key={scheme.id ?? idx}
                     layout
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.30, delay: Math.min(idx, 11) * 0.05 }}
+                    transition={{ duration: 0.30, delay: Math.min(idx % 24, 11) * 0.04 }}
                   >
                     <SchemeCard scheme={scheme} idx={idx} onExplore={setSelectedScheme} />
                   </motion.div>
@@ -489,6 +511,29 @@ export default function SchemesPage() {
               </motion.div>
             )}
           </AnimatePresence>
+        )}
+
+        {/* ── Load More button ── */}
+        {!loading && !error && hasMore && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 36 }}>
+            <button
+              onClick={() => setVisibleCount(v => v + 24)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                fontFamily: "'DM Sans',sans-serif", fontWeight: 800, fontSize: 14,
+                paddingInline: 32, paddingBlock: 14, borderRadius: 50,
+                border: '2px solid rgba(46,159,117,0.35)',
+                background: 'rgba(46,159,117,0.08)', color: '#2E9F75',
+                cursor: 'pointer', transition: 'all 0.22s ease',
+                boxShadow: '0 4px 20px rgba(46,159,117,0.12)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'linear-gradient(135deg,#2E9F75,#10B981)'; (e.currentTarget as HTMLButtonElement).style.color = '#fff'; (e.currentTarget as HTMLButtonElement).style.border = '2px solid transparent'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(46,159,117,0.08)'; (e.currentTarget as HTMLButtonElement).style.color = '#2E9F75'; (e.currentTarget as HTMLButtonElement).style.border = '2px solid rgba(46,159,117,0.35)'; }}
+            >
+              <ChevronDown size={16} />
+              Load More ({filtered.length - visibleCount} remaining)
+            </button>
+          </div>
         )}
       </div>
 
