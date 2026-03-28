@@ -4,6 +4,7 @@ import { SchemeCarousel } from './components/SchemeCarousel';
 import { Navbar, StatsStrip, HowItWorks, CategoriesGrid, PersonalisationCTA, Footer } from './components/Sections';
 import { LanguageProvider } from './context/LanguageContext';
 import SBotWidget from './components/SBotWidget';
+import SchemeFinder from './components/SchemeFinder';
 
 function App() {
   return (
@@ -12,7 +13,8 @@ function App() {
         <Navbar />
         <main>
           <Hero />
-          <SchemeCarousel />
+          <SchemeFinder />
+          <div id="popular-schemes"><SchemeCarousel /></div>
           <StatsStrip />
           <HowItWorks />
           <CategoriesGrid />
