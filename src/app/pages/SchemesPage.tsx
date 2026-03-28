@@ -288,15 +288,7 @@ export default function SchemesPage() {
         </div>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
-            <span style={{
-              display: 'inline-block',
-              fontFamily: "'DM Sans',sans-serif", fontSize: 12.5, fontWeight: 700,
-              paddingInline: 16, paddingBlock: 6, borderRadius: 99,
-              background: 'rgba(46,159,117,0.20)', border: '1px solid rgba(46,159,117,0.30)',
-              color: '#4ecca3', marginBottom: 16,
-            }}>
-              3,400+ Schemes · 15 Categories · Live API Data
-            </span>
+
             <h1 style={{
               fontFamily: "'Playfair Display', Georgia, serif",
               fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 900, color: '#fff',
@@ -381,9 +373,7 @@ export default function SchemesPage() {
               ? 'Loading…'
               : error
                 ? 'Could not load schemes'
-                : activeCategory.api === null
-                  ? `Showing ${filtered.length.toLocaleString()} of ${(localSchemes as unknown[]).length.toLocaleString()} saved schemes${searchQuery ? ' (filtered)' : ''}`
-                  : `${filtered.length} scheme${filtered.length !== 1 ? 's' : ''} from API${searchQuery ? ' (filtered)' : ''}`}
+                : `${filtered.length.toLocaleString()} scheme${filtered.length !== 1 ? 's' : ''}${searchQuery ? ' (filtered)' : ''}`}
             </p>
           </div>
           {error && (
