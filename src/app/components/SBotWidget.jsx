@@ -634,8 +634,8 @@ export default function SBotWidget({ avatarSrc = undefined }) {
   /* Position helpers */
   const isMobile      = typeof window !== 'undefined' && window.innerWidth < 480;
   const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
-  const CHAT_HEIGHT   = isMobile ? 430 : 500;
-  const CHAT_WIDTH    = isMobile ? 320 : 360;
+  const CHAT_HEIGHT   = isMobile ? 430 : 500;  // chat window height
+  const CHAT_WIDTH    = isMobile ? 320 : 360;  // chat window width
   const ROBOT_BOTTOM  = 16;            // robot bottom offset
   const ROBOT_HEIGHT  = 148;           // robot SVG height
 
