@@ -1,29 +1,24 @@
 import React from 'react';
 import { Routes, Route } from 'react-router';
-import { Navbar } from './components/Sections';
+import { Navbar, StatsStrip, HowItWorks, CategoriesGrid, PersonalisationCTA, Footer } from './components/Sections';
+import { Hero } from './components/Hero';
+import { SchemeCarousel } from './components/SchemeCarousel';
 import { LanguageProvider } from './context/LanguageContext';
-import HomePage from './pages/HomePage';
-import SchemesPage from './pages/SchemesPage';
-import HowItWorksPage from './pages/HowItWorksPage';
-import CategoriesPage from './pages/CategoriesPage';
-import AboutPage from './pages/AboutPage';
-import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
     <LanguageProvider>
-      <div className="min-h-screen overflow-x-hidden font-['DM_Sans',sans-serif] text-[#111827] selection:bg-[#2E9F75] selection:text-white">
-        <Routes>
-          {/* Login — full screen, no shared navbar */}
-          <Route path="/login" element={<LoginPage />} />
-
-          {/* All other pages share the Navbar */}
-          <Route path="/" element={<><Navbar /><main><HomePage /></main></>} />
-          <Route path="/schemes" element={<><Navbar /><main><SchemesPage /></main></>} />
-          <Route path="/how-it-works" element={<><Navbar /><main><HowItWorksPage /></main></>} />
-          <Route path="/categories" element={<><Navbar /><main><CategoriesPage /></main></>} />
-          <Route path="/about" element={<><Navbar /><main><AboutPage /></main></>} />
-        </Routes>
+      <div className="min-h-screen overflow-x-hidden font-['DM_Sans',sans-serif] text-[#111827] bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2] selection:bg-[#2E9F75] selection:text-white">
+        <Navbar />
+        <main>
+          <Hero />
+          <SchemeCarousel />
+          <StatsStrip />
+          <HowItWorks />
+          <CategoriesGrid />
+          <PersonalisationCTA />
+        </main>
+        <Footer />
       </div>
     </LanguageProvider>
   );
