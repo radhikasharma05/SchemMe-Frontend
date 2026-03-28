@@ -138,8 +138,8 @@ export const Hero = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                    <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Scholarship</h3>
-                    <p className="font-['DM_Sans'] text-xs sm:text-sm text-white/90">Education Assistance</p>
+                    <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Education</h3>
+                    <p className="font-['DM_Sans'] text-xs sm:text-sm text-white/90">Quality Learning for All</p>
                   </div>
                 </div>
 

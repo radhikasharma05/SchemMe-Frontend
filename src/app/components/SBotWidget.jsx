@@ -92,10 +92,10 @@ const STYLES = `
 `;
 
 /* ── Robot SVG ───────────────────────────────────────────── */
-function RobotSVG({ isWalking, facingLeft, armWaving }) {
+function RobotSVG({ isWalking, facingLeft, armWaving, svgWidth = 110, svgHeight = 148 }) {
   return (
     <svg
-      width="110" height="148"
+      width={svgWidth} height={svgHeight}
       viewBox="0 0 130 168"
       xmlns="http://www.w3.org/2000/svg"
       className={`sbot-svg${isWalking ? ' sbot-walking' : ''}`}
@@ -460,6 +460,7 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     : <MiniRobot size={size}/>;
 
   /* Position helpers */
+<<<<<<< HEAD
   const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
   const CHAT_HEIGHT   = 500;           // chat window height
   const CHAT_WIDTH    = 360;           // chat window width
@@ -477,6 +478,11 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     ? chatBottomRaw
     : Math.max(0, chatBottomMax);
 
+=======
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 480;
+  const rLeft    = robotLeft;
+  const chatLeft = Math.max(10, Math.min(rLeft - 250, window.innerWidth - (isMobile ? 320 : 375)));
+>>>>>>> 9ccadcb52172fdc84d2bb9042969b1fa4d59c46b
   const wrapAnim = isDancing ? 'sbot-dance' : isWalking ? 'sbot-walk' : 'sbot-idle';
 
   /* ── JSX ── */
@@ -529,7 +535,8 @@ export default function SBotWidget({ avatarSrc = undefined }) {
             onKeyDown={e => e.key === 'Enter' && setIsOpen(v => !v)}
             style={{ cursor: 'pointer', userSelect: 'none' }}
           >
-            <RobotSVG isWalking={isWalking} facingLeft={facingLeft} armWaving={armWaving}/>
+            <RobotSVG isWalking={isWalking} facingLeft={facingLeft} armWaving={armWaving}
+              svgWidth={isMobile ? 82 : 110} svgHeight={isMobile ? 110 : 148}/>
           </div>
 
           {/* Ground shadow */}
@@ -543,12 +550,19 @@ export default function SBotWidget({ avatarSrc = undefined }) {
 
       {/* ════ CHAT WINDOW ════ */}
       {isOpen && (
+<<<<<<< HEAD
         <div ref={chatRef} className="sbot-win" style={{
           position: 'fixed',
           bottom: chatBottom,
           left: chatLeft,
           width: `min(${CHAT_WIDTH}px, calc(100vw - 20px))`,
           height: Math.min(CHAT_HEIGHT, window.innerHeight - NAVBAR_HEIGHT - 20),
+=======
+        <div className="sbot-win" style={{
+          position: 'fixed', bottom: 200, left: chatLeft,
+          width: isMobile ? 'min(300px, calc(100vw - 16px))' : 'min(360px, calc(100vw - 20px))',
+          height: isMobile ? 430 : 500,
+>>>>>>> 9ccadcb52172fdc84d2bb9042969b1fa4d59c46b
           borderRadius: 18, boxShadow: '0 24px 64px rgba(0,0,0,.21)',
           background: '#fff', display: 'flex', flexDirection: 'column',
           overflow: 'hidden', zIndex: 9998,
