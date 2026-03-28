@@ -6,6 +6,7 @@ import {
   FileText, Cpu, CheckCircle, Search, ShieldCheck,
   UserCircle, LogIn, Globe, ChevronDown, Check
 } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
 
@@ -27,7 +28,8 @@ const SchemeLogo = () => (
 export const Navbar = () => {
   // Replace with real auth state from your auth context/store
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeLink, setActiveLink] = useState('Home');
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Language picker — wired to global context
   const { language, setLanguage, t } = useLanguage();
@@ -53,7 +55,9 @@ export const Navbar = () => {
 
         {/* Logo – left */}
         <div className="flex-shrink-0 cursor-pointer">
-          <SchemeLogo />
+          <Link to="/">
+            <SchemeLogo />
+          </Link>
         </div>
 
         {/* Search – centre */}
@@ -133,7 +137,7 @@ export const Navbar = () => {
           </button>
         ) : (
           <button
-            onClick={() => setIsLoggedIn(true)}
+            onClick={() => navigate('/login')}
             className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#FF7A45] to-[#FFD166] text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold hover:shadow-lg transition-all shadow-md whitespace-nowrap"
           >
             <LogIn size={15} className="flex-shrink-0" />
@@ -147,30 +151,34 @@ export const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="flex items-center justify-center gap-1 sm:gap-3 overflow-x-auto scrollbar-none h-11 sm:h-12">
             {[
-              { key: 'Home',        label: t.nav_home },
-              { key: 'Schemes',     label: t.nav_schemes },
-              { key: 'How It Works',label: t.nav_how_it_works },
-              { key: 'Categories',  label: t.nav_categories },
-              { key: 'About',       label: t.nav_about },
-            ].map((link) => (
-              <a
-                key={link.key}
-                href="#"
-                onClick={() => setActiveLink(link.key)}
-                className={`
-                  font-['DM_Sans'] text-xs sm:text-sm whitespace-nowrap
-                  px-4 sm:px-6 py-2 sm:py-2.5 rounded-full
-                  transition-all duration-200 flex-shrink-0 font-medium tracking-wide
-                  ${
-                    activeLink === link.key
-                      ? 'bg-[#2E9F75]/20 text-[#4ecca3] font-semibold ring-1 ring-[#2E9F75]/50'
-                      : 'text-white/65 hover:text-white hover:bg-white/10'
-                  }
-                `}
-              >
-                {link.label}
-              </a>
-            ))}
+              { key: '/',             label: t.nav_home },
+              { key: '/schemes',      label: t.nav_schemes },
+              { key: '/how-it-works', label: t.nav_how_it_works },
+              { key: '/categories',   label: t.nav_categories },
+              { key: '/about',        label: t.nav_about },
+            ].map((link) => {
+              const isActive = link.key === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(link.key);
+              return (
+                <Link
+                  key={link.key}
+                  to={link.key}
+                  className={`
+                    font-['DM_Sans'] text-xs sm:text-sm whitespace-nowrap
+                    px-4 sm:px-6 py-2 sm:py-2.5 rounded-full
+                    transition-all duration-200 flex-shrink-0 font-medium tracking-wide
+                    ${
+                      isActive
+                        ? 'bg-[#2E9F75]/20 text-[#4ecca3] font-semibold ring-1 ring-[#2E9F75]/50'
+                        : 'text-white/65 hover:text-white hover:bg-white/10'
+                    }
+                  `}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
