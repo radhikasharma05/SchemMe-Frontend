@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 
+
 /* ──────────────────────────────────────────
    Constants
 ────────────────────────────────────────── */
@@ -23,6 +24,50 @@ const SCHEME_CAT_CFG = {
   Legal:              { bg:'rgba(107,114,128,0.12)', text:'#374151', icon:'⚖️', grad:'from-gray-500 to-gray-600' },
   Other:              { bg:'rgba(11,37,69,0.08)',    text:'#0B2545', icon:'📋', grad:'from-gray-400 to-gray-500' },
 };
+
+/* ──────────────────────────────────────────
+   API normalizer (same shape as SchemeFinder)
+────────────────────────────────────────── */
+const CAT_KEYWORDS = [
+  'Education','Health','Women','Social Welfare','Agriculture',
+  'Business','Finance','Employment','Housing','Transport',
+  'Utility','Science & Tech','Sports & Culture','Legal',
+];
+
+function normalizeScheme(s) {
+  if (!s) return null;
+  let category = s.category || '';
+  if (!category && s.schemeCategory) {
+    const parts = s.schemeCategory.split(',').map(p => p.trim()).filter(Boolean);
+    category = parts[0] || 'Other';
+  }
+  const matchedCat = CAT_KEYWORDS.find(k =>
+    category.toLowerCase().includes(k.toLowerCase())
+  ) || 'Other';
+
+  let tags = s.tags;
+  if (!Array.isArray(tags)) {
+    const raw = s.search_tags || s.tags || '';
+    tags = String(raw).split(',').map(t => t.trim()).filter(Boolean);
+  }
+
+  return {
+    id:              s.id,
+    name:            s.name            || s.scheme_name   || '',
+    slug:            s.slug            || '',
+    description:     s.description     || s.details        || '',
+    descriptionFull: s.descriptionFull || s.details        || '',
+    benefits:        s.benefits        || '',
+    eligibility:     s.eligibility     || '',
+    application:     s.application     || '',
+    documents:       s.documents       || '',
+    level:           s.level           || 'Central',
+    stateName:       s.stateName       || s.level_name     || '',
+    category:        matchedCat,
+    rawCategory:     s.schemeCategory  || category,
+    tags,
+  };
+}
 
 /* ──────────────────────────────────────────
    CSS
@@ -131,7 +176,8 @@ function InfoBadge({ label, value, icon, bg, color }) {
 /* ──────────────────────────────────────────
    Main Modal
 ────────────────────────────────────────── */
-export default function SchemeDetailModal({ scheme, onClose }) {
+export default function SchemeDetailModal({ scheme: schemeProp, onClose }) {
+  const scheme = normalizeScheme(schemeProp);
   const cfg = SCHEME_CAT_CFG[scheme?.category] || SCHEME_CAT_CFG['Other'];
   const isCentral = scheme?.level === 'Central';
 
@@ -197,7 +243,7 @@ export default function SchemeDetailModal({ scheme, onClose }) {
           >
             {/* Badges row */}
             <div style={{ display:'flex', flexWrap:'wrap', gap: 8, marginBottom: 10 }}>
-              {/* Category badge */}
+              {/* Category badge - show full raw category string */}
               <span className="mdl-badge-pop" style={{
                 display:'inline-flex', alignItems:'center', gap: 5,
                 fontFamily:"'DM Sans',sans-serif", fontSize: 11.5, fontWeight: 800,
@@ -205,7 +251,7 @@ export default function SchemeDetailModal({ scheme, onClose }) {
                 background: cfg.bg, color: cfg.text,
                 animationDelay: '0.05s',
               }}>
-                {cfg.icon} {scheme.category}
+                {cfg.icon} {scheme.rawCategory || scheme.category}
               </span>
 
               {/* Central / State badge */}

@@ -1,6 +1,54 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import schemesData from '../../res/schemes.json';
+import _schemesRaw from '../../res/schemes.json';
 import SchemeDetailModal from './SchemeDetailModal';
+
+// ─── API field normalizer ─────────────────────────────────────────────────────
+// Converts both API responses and local JSON to a unified internal shape.
+function normalizeScheme(s) {
+  // Parse schemeCategory: may be a comma-separated string
+  let category = s.category || '';
+  if (!category && s.schemeCategory) {
+    // Take the first meaningful category segment
+    const parts = s.schemeCategory.split(',').map(p => p.trim()).filter(Boolean);
+    category = parts[0] || 'Other';
+  }
+
+  // Detect primary category keyword for SCHEME_CAT_CFG lookup
+  const CAT_KEYWORDS = [
+    'Education','Health','Women','Social Welfare','Agriculture',
+    'Business','Finance','Employment','Housing','Transport',
+    'Utility','Science & Tech','Sports & Culture','Legal',
+  ];
+  const matchedCat = CAT_KEYWORDS.find(k =>
+    category.toLowerCase().includes(k.toLowerCase())
+  ) || 'Other';
+
+  // Parse tags: may be a comma-separated string or already an array
+  let tags = s.tags;
+  if (!Array.isArray(tags)) {
+    const raw = s.search_tags || s.tags || '';
+    tags = String(raw).split(',').map(t => t.trim()).filter(Boolean);
+  }
+
+  return {
+    id:              s.id,
+    name:            s.name            || s.scheme_name   || '',
+    slug:            s.slug            || '',
+    description:     s.description     || s.details        || '',
+    descriptionFull: s.descriptionFull || s.details        || '',
+    benefits:        s.benefits        || '',
+    eligibility:     s.eligibility     || '',
+    application:     s.application     || '',
+    documents:       s.documents       || '',
+    level:           s.level           || 'Central',
+    stateName:       s.stateName       || s.level_name     || '',
+    category:        matchedCat,
+    rawCategory:     s.schemeCategory  || category,
+    tags,
+  };
+}
+
+const schemesData = _schemesRaw.map(normalizeScheme);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TOTAL_STEPS  = 6;
@@ -488,6 +536,7 @@ export default function SchemeFinder() {
       results = results.filter(s =>
         s.name?.toLowerCase().includes(q) ||
         s.description?.toLowerCase().includes(q) ||
+        s.rawCategory?.toLowerCase().includes(q) ||
         s.benefits?.toLowerCase().includes(q) ||
         s.tags?.some(t => t.includes(q))
       );
