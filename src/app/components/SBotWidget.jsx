@@ -460,17 +460,10 @@ export default function SBotWidget({ avatarSrc = undefined }) {
     : <MiniRobot size={size}/>;
 
   /* Position helpers */
-<<<<<<< HEAD
-  const isMobile     = typeof window !== 'undefined' && window.innerWidth < 480;
-  const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
-  const CHAT_HEIGHT   = isMobile ? 430 : 500;  // chat window height
-  const CHAT_WIDTH    = isMobile ? 300 : 360;  // chat window width
-=======
   const isMobile      = typeof window !== 'undefined' && window.innerWidth < 480;
   const NAVBAR_HEIGHT = 70;            // approximate navbar height in px
   const CHAT_HEIGHT   = isMobile ? 430 : 500;
   const CHAT_WIDTH    = isMobile ? 320 : 360;
->>>>>>> 0fbaba3b9d09c700fd4e9175a2f3b1c8c31c64fa
   const ROBOT_BOTTOM  = 16;            // robot bottom offset
   const ROBOT_HEIGHT  = 148;           // robot SVG height
 

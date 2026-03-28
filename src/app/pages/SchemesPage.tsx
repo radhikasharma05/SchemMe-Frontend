@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, RefreshCw, AlertCircle } from 'lucide-react';
 import { Footer } from '../components/Sections';
@@ -219,7 +220,23 @@ function SchemeCard({ scheme, onExplore, idx }: { scheme: ApiScheme; onExplore: 
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function SchemesPage() {
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
+  const location = useLocation();
+
+  // Pick initial category from ?category= query param
+  const initCategory = () => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('category');
+    if (cat) {
+      const found = CATEGORIES.find(
+        c => c.label.toLowerCase() === cat.toLowerCase() ||
+             c.api?.toLowerCase() === cat.toLowerCase()
+      );
+      if (found) return found;
+    }
+    return CATEGORIES[0];
+  };
+
+  const [activeCategory, setActiveCategory] = useState(initCategory);
   const [searchQuery,    setSearchQuery]    = useState('');
   const [schemes,        setSchemes]        = useState<ApiScheme[]>([]);
   const [loading,        setLoading]        = useState(true);

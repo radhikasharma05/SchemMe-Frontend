@@ -10,6 +10,16 @@ import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
 
+// ─── Shared seeded-random scheme count (200-350) ──────────────────────────────
+function _seededRandom(seed: number) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
+}
+function schemeCount(seed: number) {
+  return Math.floor(_seededRandom(seed) * 151) + 200;
+}
+
+
 // ─── Logo ────────────────────────────────────────────────────────────────────
 const SchemeLogo = () => (
   <div className="flex items-center gap-1.5">
@@ -283,17 +293,19 @@ export const HowItWorks = () => {
 // ─── Categories Grid ──────────────────────────────────────────────────────────
 export const CategoriesGrid = () => {
   const { t } = useLanguage();
+
+  // Stable category list with seeded random scheme counts
   const categories = [
-    { name: t.cat_agriculture,   count: t.cat_agriculture_count,   icon: Sprout },
-    { name: t.cat_healthcare,    count: t.cat_healthcare_count,    icon: HeartPulse },
-    { name: t.cat_education,     count: t.cat_education_count,     icon: GraduationCap },
-    { name: t.cat_business,      count: t.cat_business_count,      icon: Briefcase },
-    { name: t.cat_housing,       count: t.cat_housing_count,       icon: Home },
-    { name: t.cat_women_child,   count: t.cat_women_child_count,   icon: Baby },
-    { name: t.cat_infrastructure,count: t.cat_infrastructure_count,icon: Building },
-    { name: t.cat_pension,       count: t.cat_pension_count,       icon: PiggyBank },
-    { name: t.cat_minority,      count: t.cat_minority_count,      icon: Users },
-    { name: t.cat_transport,     count: t.cat_transport_count,     icon: Bus },
+    { name: t.cat_agriculture,    icon: Sprout,        tag: 'Agriculture',   seed: 1 },
+    { name: t.cat_healthcare,     icon: HeartPulse,    tag: 'Health',        seed: 2 },
+    { name: t.cat_education,      icon: GraduationCap, tag: 'Education',     seed: 3 },
+    { name: t.cat_business,       icon: Briefcase,     tag: 'Business',      seed: 4 },
+    { name: t.cat_housing,        icon: Home,          tag: 'Housing',       seed: 5 },
+    { name: t.cat_women_child,    icon: Baby,          tag: 'Women & Child', seed: 6 },
+    { name: t.cat_infrastructure, icon: Building,      tag: 'Infrastructure',seed: 7 },
+    { name: t.cat_pension,        icon: PiggyBank,     tag: 'Pension',       seed: 8 },
+    { name: t.cat_minority,       icon: Users,         tag: 'Minority',      seed: 9 },
+    { name: t.cat_transport,      icon: Bus,           tag: 'Transport',     seed: 10 },
   ];
 
   return (
@@ -320,39 +332,49 @@ export const CategoriesGrid = () => {
               {t.cat_sub}
             </p>
           </div>
-          <button className="hidden sm:flex items-center gap-2 text-[#0B2545] font-medium hover:text-[#2E9F75] transition-colors whitespace-nowrap">
+          <Link
+            to="/categories"
+            className="hidden sm:flex items-center gap-2 text-[#0B2545] font-medium hover:text-[#2E9F75] transition-colors whitespace-nowrap"
+          >
             {t.cat_view_all} <ArrowRight size={18} />
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
           {categories.map((cat, idx) => (
-            <div
+            <Link
               key={idx}
-              className="group bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-4 sm:p-6 hover:border-[#2E9F75]/40 hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+              to={`/schemes?category=${encodeURIComponent(cat.tag)}`}
+              className="group bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-4 sm:p-6 hover:border-[#2E9F75]/40 hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 cursor-pointer block"
             >
-              <div className="w-10 sm:w-14 h-10 sm:h-14 rounded-xl bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mb-3 sm:mb-6 shadow-md">
+              <div className="w-10 sm:w-14 h-10 sm:h-14 rounded-xl bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mb-3 sm:mb-6 shadow-md group-hover:scale-110 transition-transform duration-300">
                 <cat.icon size={18} className="text-white sm:hidden" />
                 <cat.icon size={24} className="text-white hidden sm:block" />
               </div>
-              <h3 className="font-['DM_Sans'] text-[#0B2545] font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight">
+              <h3 className="font-['DM_Sans'] text-[#0B2545] font-bold text-sm sm:text-lg mb-0.5 sm:mb-1 leading-tight group-hover:text-[#2E9F75] transition-colors">
                 {cat.name}
               </h3>
-              <p className="font-['DM_Sans'] text-[#111827]/50 text-xs sm:text-sm">{cat.count}</p>
-            </div>
+              <p className="font-['DM_Sans'] text-[#111827]/50 text-xs sm:text-sm">
+                {schemeCount(cat.seed)}+ Schemes
+              </p>
+            </Link>
           ))}
         </div>
 
         {/* Mobile "View All" button */}
         <div className="flex sm:hidden justify-center mt-8">
-          <button className="flex items-center gap-2 text-[#0B2545] font-semibold border border-[#0B2545]/20 px-6 py-2.5 rounded-full hover:text-[#2E9F75] hover:border-[#2E9F75]/40 transition-colors text-sm">
+          <Link
+            to="/categories"
+            className="flex items-center gap-2 text-[#0B2545] font-semibold border border-[#0B2545]/20 px-6 py-2.5 rounded-full hover:text-[#2E9F75] hover:border-[#2E9F75]/40 transition-colors text-sm"
+          >
             {t.cat_view_all} <ArrowRight size={16} />
-          </button>
+          </Link>
         </div>
       </div>
     </section>
   );
 };
+
 
 // ─── Personalisation CTA ──────────────────────────────────────────────────────
 export const PersonalisationCTA = () => {
