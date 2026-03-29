@@ -3,17 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, LogIn, Mail, Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
-<<<<<<< HEAD
 import { useLanguage } from '../context/LanguageContext';
-
-const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { t } = useLanguage();
-=======
 import { apiLogin } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -24,7 +14,7 @@ const LoginPage = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const { login } = useAuth();
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
+  const { t } = useLanguage();
 
   const [showPassword, setShowPassword] = useState(false);
   const [form,   setForm]    = useState({ email: '', password: '' });
@@ -216,11 +206,7 @@ const LoginPage = () => {
                 ) : (
                   <>
                     <LogIn size={16} />
-<<<<<<< HEAD
                     {t.login_submit}
-=======
-                    Sign In
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
                   </>
                 )}
               </button>

@@ -4255,7 +4255,49 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('schemme_lang', lang.code);
     setLanguageState(lang);
     setT(getTranslations(lang.code));
+
+    // Update Google Translate widget
+    const googleCodeMap: Record<string, string> = {
+      EN: 'en', HI: 'hi', BN: 'bn', TE: 'te', MR: 'mr', TA: 'ta', KN: 'kn', GU: 'gu', PA: 'pa',
+      OR: 'or', ML: 'ml', AS: 'as', UR: 'ur', SA: 'sa', KOK: 'gom', SD: 'sd', KS: 'ks', DOG: 'doi',
+      MAI: 'mai', NE: 'ne', BOD: 'brx', MNI: 'mni-Mtei', SAT: 'sat'
+    };
+    
+    try {
+      const googleLang = googleCodeMap[lang.code] || 'en';
+      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+      if (select) {
+        select.value = googleLang;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      } else {
+        // Fallback cookie injection
+        document.cookie = `googtrans=/en/${googleLang}; path=/; domain=${window.location.hostname}`;
+        document.cookie = `googtrans=/en/${googleLang}; path=/`;
+      }
+    } catch (e) {
+      console.error('Google Translate sync error:', e);
+    }
   };
+
+  // Sync initial language to Google Translate on load
+  React.useEffect(() => {
+    const syncInitial = () => {
+      const googleCodeMap: Record<string, string> = {
+        EN: 'en', HI: 'hi', BN: 'bn', TE: 'te', MR: 'mr', TA: 'ta', KN: 'kn', GU: 'gu', PA: 'pa',
+        OR: 'or', ML: 'ml', AS: 'as', UR: 'ur', SA: 'sa', KOK: 'gom', SD: 'sd', KS: 'ks', DOG: 'doi',
+        MAI: 'mai', NE: 'ne', BOD: 'brx', MNI: 'mni-Mtei', SAT: 'sat'
+      };
+      const googleLang = googleCodeMap[language.code] || 'en';
+      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+      if (select && select.value !== googleLang) {
+        select.value = googleLang;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
+    const timer1 = setTimeout(syncInitial, 1500);
+    const timer2 = setTimeout(syncInitial, 3500);
+    return () => { clearTimeout(timer1); clearTimeout(timer2); };
+  }, [language.code]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

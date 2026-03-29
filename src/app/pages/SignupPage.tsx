@@ -6,13 +6,10 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import logoImg from '../../assets/logo.png';
-<<<<<<< HEAD
 import { useLanguage } from '../context/LanguageContext';
-=======
 import { apiSignup, apiVerifyOtp, apiResendOtp } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -66,13 +63,6 @@ const ErrorMsg = ({ msg }: { msg?: string }) =>
 
 // ─── OTP stage ────────────────────────────────────────────────────────────────
 
-<<<<<<< HEAD
-const SignupPage = () => {
-  const navigate = useNavigate();
-  const { t } = useLanguage();
-  const [showPass, setShowPass] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-=======
 interface OtpStageProps {
   email: string;
   onVerified: () => void;
@@ -80,9 +70,9 @@ interface OtpStageProps {
 }
 
 function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
+  const { t } = useLanguage();
   const [otp, setOtp]         = useState(['', '', '', '', '', '']);
   const [error, setError]     = useState('');
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0); // seconds
@@ -156,38 +146,7 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
     }
   };
 
-<<<<<<< HEAD
-  const chipCls = (active: boolean, err?: string) =>
-    `cursor-pointer px-4 py-2 rounded-xl border text-sm font-['DM_Sans'] font-medium transition-all ${
-      active
-        ? 'bg-gradient-to-r from-[#2E9F75] to-[#1a7a52] text-white border-transparent shadow-md shadow-[#2E9F75]/20'
-        : err
-        ? 'border-red-300 bg-red-50 text-red-500 hover:border-red-400'
-        : 'border-[#E8D5B7] bg-white/80 text-[#0B2545]/60 hover:border-[#2E9F75] hover:text-[#2E9F75]'
-    }`;
-
-  // ── Success overlay ─────────────────────────────────────────────────────────
-  if (stage === 'done') return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="text-center"
-      >
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mx-auto mb-4 shadow-xl">
-          <CheckCircle2 size={40} className="text-white" />
-        </div>
-        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">{t.signup_success_heading}</h2>
-        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">{t.signup_success_sub}</p>
-      </motion.div>
-    </div>
-  );
-
-  // ── OTP Verification page ────────────────────────────────────────────────────
-  if (stage === 'otp') return (
-=======
   return (
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 relative bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
       {/* Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -282,18 +241,6 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
           </button>
 
           {/* Resend */}
-<<<<<<< HEAD
-          <p className="font-['DM_Sans'] text-[#0B2545]/45 text-xs text-center mt-5">
-            Didn't receive the code?{' '}
-            <button
-              id="otp-resend-btn"
-              onClick={() => setOtp(['', '', '', '', '', ''])}
-              className="text-[#2E9F75] font-semibold hover:underline transition-colors"
-            >
-              {t.signup_resend}
-            </button>
-          </p>
-=======
           <div className="mt-5 text-center space-y-1">
             <p className="font-['DM_Sans'] text-[#0B2545]/45 text-xs">
               {resendCooldown > 0
@@ -309,7 +256,7 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
               >
                 {resendLoading
                   ? <><RefreshCw size={12} className="animate-spin" /> Sending…</>
-                  : <><RefreshCw size={12} /> Resend OTP</>}
+                  : <><RefreshCw size={12} /> {t.signup_resend}</>}
               </button>
             )}
             <AnimatePresence>
@@ -325,7 +272,6 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
               )}
             </AnimatePresence>
           </div>
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
 
           {/* Trust */}
           <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-[#0B2545]/40 font-['DM_Sans']">
@@ -349,6 +295,7 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
 // ─── Done stage ───────────────────────────────────────────────────────────────
 
 function DoneStage() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
       <motion.div
@@ -359,8 +306,8 @@ function DoneStage() {
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mx-auto mb-4 shadow-xl">
           <CheckCircle2 size={40} className="text-white" />
         </div>
-        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">Account Created!</h2>
-        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">Redirecting you to login…</p>
+        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">{t.signup_success_heading}</h2>
+        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">{t.signup_success_sub}</p>
       </motion.div>
     </div>
   );
@@ -370,6 +317,7 @@ function DoneStage() {
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { setPendingEmail, clearPendingEmail, pendingEmail } = useAuth();
 
   const [showPass,    setShowPass]    = useState(false);
@@ -776,7 +724,6 @@ const SignupPage = () => {
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}
             className="space-y-3"
           >
-<<<<<<< HEAD
             <button
               type="submit"
               id="signup-submit-btn"
@@ -791,13 +738,6 @@ const SignupPage = () => {
                   {t.signup_create_btn}
                 </>
               )}
-=======
-            <button type="submit" id="signup-submit-btn" disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]">
-              {loading
-                ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                : <><UserPlus size={17} /> Create My Account</>}
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
             </button>
 
             <button type="button" id="signup-login-btn" onClick={() => navigate('/login')}
@@ -808,11 +748,7 @@ const SignupPage = () => {
 
             <div className="flex items-center justify-center gap-1.5 pt-1 text-xs text-[#0B2545]/40 font-['DM_Sans']">
               <ShieldCheck size={12} className="text-[#2E9F75]" />
-<<<<<<< HEAD
               {t.signup_trust}
-=======
-              Your data is encrypted &amp; used only to personalise scheme results
->>>>>>> 2d8ebbaf32670589fc178e4cd10a946d5f97ab6e
             </div>
           </motion.div>
 
