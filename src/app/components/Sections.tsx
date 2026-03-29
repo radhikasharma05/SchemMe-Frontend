@@ -4,11 +4,13 @@ import {
   Sprout, HeartPulse, GraduationCap, Briefcase, Home,
   Baby, Building, PiggyBank, Users, Bus, ArrowRight,
   FileText, Cpu, CheckCircle, Search, ShieldCheck,
-  UserCircle, LogIn, UserPlus, Globe, ChevronDown, Check, X
+  UserCircle, LogIn, UserPlus, Globe, ChevronDown, Check, LogOut, LayoutDashboard, X
 } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
 import { useLanguage, LANGUAGES } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 import localSchemes from '../../res/schemes.json';
 
 // ─── Scheme type for search ───────────────────────────────────────────────────
@@ -76,10 +78,30 @@ function useSchemeSearch() {
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 export const Navbar = () => {
-  // Replace with real auth state from your auth context/store
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { token, user, logout } = useAuth();
+  const isLoggedIn = !!token;
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    toast.success('Logged out successfully');
+    navigate('/');
+  };
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // Language picker — wired to global context
   const { language, setLanguage, t } = useLanguage();
@@ -305,13 +327,44 @@ export const Navbar = () => {
 
         {/* Auth – right */}
         {isLoggedIn ? (
-          <button
-            onClick={() => setIsLoggedIn(false)}
-            className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all"
-          >
-            <UserCircle size={18} className="flex-shrink-0" />
-            <span className="hidden sm:inline whitespace-nowrap">{t.nav_my_account}</span>
-          </button>
+          <div ref={userMenuRef} className="relative flex-shrink-0">
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="flex items-center gap-1.5 sm:gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold transition-all"
+              aria-label="User menu"
+            >
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#2E9F75] to-[#FFD166] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {user?.name ? user.name.charAt(0).toUpperCase() : <UserCircle size={14} />}
+              </div>
+              <span className="hidden sm:inline whitespace-nowrap max-w-[80px] truncate">
+                {user?.name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Account'}
+              </span>
+              <ChevronDown size={12} className={`hidden sm:block text-white/60 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {userMenuOpen && (
+              <div className="absolute right-0 top-[calc(100%+8px)] w-52 bg-[#0B2545] border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-white/10">
+                  <p className="text-white text-sm font-semibold truncate">{user?.name ?? 'User'}</p>
+                  <p className="text-white/45 text-xs truncate mt-0.5">{user?.email ?? ''}</p>
+                </div>
+                <button
+                  onClick={() => { setUserMenuOpen(false); navigate('/dashboard'); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-white/75 hover:bg-white/8 hover:text-white text-sm transition-colors"
+                >
+                  <LayoutDashboard size={15} className="text-[#4ecca3]" />
+                  Dashboard
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 text-sm transition-colors border-t border-white/10"
+                >
+                  <LogOut size={15} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
