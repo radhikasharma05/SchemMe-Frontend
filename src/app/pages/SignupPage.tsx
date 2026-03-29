@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import logoImg from '../../assets/logo.png';
+import { useLanguage } from '../context/LanguageContext';
 import { apiSignup, apiVerifyOtp, apiResendOtp } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -114,6 +115,7 @@ interface OtpStageProps {
 }
 
 function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
+  const { t } = useLanguage();
   const [otp, setOtp]                       = useState(['', '', '', '', '', '']);
   const [error, setError]                   = useState('');
   const [loading, setLoading]               = useState(false);
@@ -211,8 +213,12 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
               <Mail size={36} className="text-[#2E9F75]" />
             </div>
           </div>
-          <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold text-center mb-2">Verify Your Email</h2>
-          <p className="font-['DM_Sans'] text-[#0B2545]/55 text-sm text-center mb-1">We've sent a 6‑digit code to</p>
+          <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold text-center mb-2">
+            {t.signup_verify_heading}
+          </h2>
+          <p className="font-['DM_Sans'] text-[#0B2545]/55 text-sm text-center mb-1">
+            {t.signup_verify_sub}
+          </p>
           <p className="font-['DM_Sans'] text-[#2E9F75] text-sm font-bold text-center mb-7 truncate">{email}</p>
 
           <div className="flex justify-center gap-3 mb-3" onPaste={handlePaste}>
@@ -242,11 +248,21 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
             )}
           </AnimatePresence>
 
-          <button id="otp-submit-btn" onClick={handleSubmit} disabled={loading}
-            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm mt-5 hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]">
-            {loading
-              ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <><CheckCircle2 size={17} /> Verify &amp; Activate Account</>}
+          {/* Submit */}
+          <button
+            id="otp-submit-btn"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm mt-5 hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <CheckCircle2 size={17} />
+                {t.signup_verify_btn}
+              </>
+            )}
           </button>
 
           <div className="mt-5 text-center space-y-1">
@@ -254,9 +270,15 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
               {resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Didn't receive the code?"}
             </p>
             {resendCooldown === 0 && (
-              <button id="otp-resend-btn" onClick={handleResend} disabled={resendLoading}
-                className="inline-flex items-center gap-1.5 text-[#2E9F75] font-semibold text-xs hover:underline disabled:opacity-50 font-['DM_Sans']">
-                {resendLoading ? <><RefreshCw size={12} className="animate-spin" /> Sending…</> : <><RefreshCw size={12} /> Resend OTP</>}
+              <button
+                id="otp-resend-btn"
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="inline-flex items-center gap-1.5 text-[#2E9F75] font-semibold text-xs hover:underline disabled:opacity-50 font-['DM_Sans']"
+              >
+                {resendLoading
+                  ? <><RefreshCw size={12} className="animate-spin" /> Sending…</>
+                  : <><RefreshCw size={12} /> {t.signup_resend}</>}
               </button>
             )}
             <AnimatePresence>
@@ -275,9 +297,12 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
           </div>
         </motion.div>
 
-        <button id="otp-back-btn" onClick={onBack}
-          className="mt-5 w-full text-center font-['DM_Sans'] text-sm text-[#0B2545]/45 hover:text-[#2E9F75] transition-colors">
-          ← Back to signup
+        <button
+          id="otp-back-btn"
+          onClick={onBack}
+          className="mt-5 w-full text-center font-['DM_Sans'] text-sm text-[#0B2545]/45 hover:text-[#2E9F75] transition-colors"
+        >
+          {t.signup_back}
         </button>
       </div>
     </div>
@@ -287,14 +312,15 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
 // ─── Done Stage ───────────────────────────────────────────────────────────────
 
 function DoneStage() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mx-auto mb-4 shadow-xl">
           <CheckCircle2 size={40} className="text-white" />
         </div>
-        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">Account Created!</h2>
-        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">Redirecting to your dashboard…</p>
+        <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">{t.signup_success_heading}</h2>
+        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">{t.signup_success_sub}</p>
       </motion.div>
     </div>
   );
@@ -304,6 +330,7 @@ function DoneStage() {
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { login, setPendingEmail, clearPendingEmail, pendingEmail } = useAuth();
 
   const [showPass,    setShowPass]    = useState(false);
@@ -470,7 +497,7 @@ const SignupPage = () => {
             </span>
           </Link>
           <p className="font-['DM_Sans'] text-[#111827]/50 text-sm mt-1.5">
-            Create your profile to discover schemes tailored for you
+            {t.signup_tagline}
           </p>
         </div>
 
@@ -723,23 +750,29 @@ const SignupPage = () => {
             )}
           </AnimatePresence>
 
-          {/* ── Submit ── */}
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}
-            className="space-y-3">
-            <button type="submit" id="signup-submit-btn"
-              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all active:scale-[0.98]">
-              <UserPlus size={17} /> Create My Account
+          {/* ── Submit row ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}
+            className="space-y-3"
+          >
+            <button
+              type="submit"
+              id="signup-submit-btn"
+              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all active:scale-[0.98]"
+            >
+              <UserPlus size={17} />
+              {t.signup_create_btn}
             </button>
 
             <button type="button" id="signup-login-btn" onClick={() => navigate('/login')}
               className="w-full flex items-center justify-center gap-2 border-2 border-[#0B2545]/15 hover:border-[#2E9F75] text-[#0B2545]/60 hover:text-[#2E9F75] py-3.5 rounded-2xl font-['DM_Sans'] font-semibold text-sm transition-all hover:bg-[#2E9F75]/5">
               <LogIn size={15} />
-              Already have an account? Login
+              {t.signup_login_btn}
             </button>
 
             <div className="flex items-center justify-center gap-1.5 pt-1 text-xs text-[#0B2545]/40 font-['DM_Sans']">
               <ShieldCheck size={12} className="text-[#2E9F75]" />
-              Your data is encrypted &amp; used only to personalise scheme results
+              {t.signup_trust}
             </div>
           </motion.div>
 

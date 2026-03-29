@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, LogIn, Mail, Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import logoImg from '../../assets/logo.png';
+import { useLanguage } from '../context/LanguageContext';
 import { apiLogin } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -14,6 +15,7 @@ const LoginPage = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const [showPassword, setShowPassword] = useState(false);
   const [form,   setForm]    = useState({ email: '', password: '' });
@@ -99,7 +101,7 @@ const LoginPage = () => {
             </span>
           </Link>
           <p className="font-['DM_Sans'] text-[#111827]/50 text-sm mt-2">
-            Discover government schemes tailored for you
+            {t.login_tagline}
           </p>
         </div>
 
@@ -135,7 +137,7 @@ const LoginPage = () => {
               {/* Email */}
               <div>
                 <label className="block font-['DM_Sans'] text-xs font-semibold text-[#0B2545]/70 mb-2 uppercase tracking-wider">
-                  Email Address
+                  {t.login_email_label}
                 </label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -157,7 +159,7 @@ const LoginPage = () => {
               {/* Password */}
               <div>
                 <label className="block font-['DM_Sans'] text-xs font-semibold text-[#0B2545]/70 mb-2 uppercase tracking-wider">
-                  Password
+                  {t.login_password_label}
                 </label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -187,7 +189,7 @@ const LoginPage = () => {
               {/* Forgot */}
               <div className="text-right -mt-1">
                 <button type="button" className="font-['DM_Sans'] text-xs text-[#2E9F75] hover:underline">
-                  Forgot password?
+                  {t.login_forgot_password}
                 </button>
               </div>
 
@@ -217,7 +219,7 @@ const LoginPage = () => {
                 ) : (
                   <>
                     <LogIn size={16} />
-                    Sign In
+                    {t.login_submit}
                   </>
                 )}
               </button>
@@ -237,14 +239,14 @@ const LoginPage = () => {
                 className="w-full flex items-center justify-center gap-2 border-2 border-[#0B2545]/20 hover:border-[#2E9F75] text-[#0B2545] hover:text-[#2E9F75] py-3.5 rounded-xl font-['DM_Sans'] font-bold text-sm transition-all hover:bg-[#2E9F75]/5"
               >
                 <UserPlus size={16} />
-                Create Account
+                {t.login_create_account}
               </button>
             </form>
 
             {/* Trust badge */}
             <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-gray-400 font-['DM_Sans']">
               <ShieldCheck size={12} className="text-[#2E9F75]" />
-              <span>Your data is encrypted &amp; never shared</span>
+              <span>{t.login_trust}</span>
             </div>
           </div>
         </motion.div>
@@ -252,7 +254,7 @@ const LoginPage = () => {
         {/* Back link */}
         <p className="text-center mt-6 font-['DM_Sans'] text-[#111827]/50 text-sm">
           <Link to="/" className="text-[#2E9F75] hover:text-[#1a7a52] font-medium transition-colors">
-            ← Back to Home
+            {t.login_back_home}
           </Link>
         </p>
       </div>

@@ -38,7 +38,7 @@ export const FloatingLines: React.FC<FloatingLinesProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const timeRef = useRef(0);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
