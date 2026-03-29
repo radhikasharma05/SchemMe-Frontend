@@ -40,10 +40,10 @@ function schemeCount(seed: number) {
 
 // ─── Logo ────────────────────────────────────────────────────────────────────
 const SchemeLogo = () => (
-  <div className="flex items-center gap-1.5">
+  <div className="flex items-center gap-1.5 notranslate" translate="no">
     <img
       src={logoImg}
-      alt="SchemeMe Logo"
+      alt="SchemMe Logo"
       className="w-11 h-11 sm:w-12 sm:h-12 lg:w-13 lg:h-13 object-contain flex-shrink-0 drop-shadow-md"
     />
     <span className="hidden lg:block font-['Playfair_Display'] text-white text-2xl font-bold tracking-tight leading-none">

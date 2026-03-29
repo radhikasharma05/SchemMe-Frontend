@@ -196,7 +196,7 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
       </div>
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 group">
+          <Link to="/" className="inline-flex items-center gap-2 group notranslate" translate="no">
             <img src={logoImg} alt="SchemMe" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
             <span className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold tracking-tight">
               Schem<span className="text-[#D94F20]">Me</span>
@@ -490,7 +490,7 @@ const SignupPage = () => {
       <div className="relative z-10 w-full max-w-2xl">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 group">
+          <Link to="/" className="inline-flex items-center gap-2 group notranslate" translate="no">
             <img src={logoImg} alt="SchemMe Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
             <span className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold tracking-tight">
               Schem<span className="text-[#D94F20]">Me</span>
