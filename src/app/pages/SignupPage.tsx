@@ -2,15 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Mail, Lock, Eye, EyeOff, ShieldCheck, ChevronDown,
-  UserPlus, LogIn, CheckCircle2, User, RefreshCw,
+  UserPlus, LogIn, CheckCircle2, RefreshCw,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import logoImg from '../../assets/logo.png';
 import { apiSignup, apiVerifyOtp, apiResendOtp } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { computeAndSavePersonalisedSchemes } from '../utils/matchSchemes';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const INDIAN_STATES = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh',
@@ -22,20 +23,68 @@ const INDIAN_STATES = [
   'Daman & Diu','Delhi','Jammu & Kashmir','Ladakh','Lakshadweep','Puducherry',
 ];
 
-const CATEGORIES  = ['General','OBC','SC','ST','OBC (Non-Creamy Layer)','EWS'];
-const ROLES       = ['Student','Farmer','Salaried Employee','Self-Employed','Business Owner','Daily Wage Worker','Homemaker','Senior Citizen','Unemployed','Other'];
-const INCOME_RANGES = ['Below ₹1 Lakh','₹1 – 2.5 Lakh','₹2.5 – 5 Lakh','₹5 – 8 Lakh','₹8 – 12 Lakh','Above ₹12 Lakh'];
+// Chip options: label shown in UI → value sent to API (exact Prisma enum)
+const GENDER_OPTIONS     = [
+  { label: 'Male',              value: 'MALE'              },
+  { label: 'Female',            value: 'FEMALE'            },
+  { label: 'Non-Binary',        value: 'NON_BINARY'        },
+  { label: 'Prefer Not to Say', value: 'PREFER_NOT_TO_SAY' },
+];
+const MARITAL_OPTIONS    = [
+  { label: 'Single',   value: 'SINGLE'   },
+  { label: 'Married',  value: 'MARRIED'  },
+  { label: 'Divorced', value: 'DIVORCED' },
+  { label: 'Widowed',  value: 'WIDOWED'  },
+];
+const AREA_OPTIONS       = [
+  { label: '🏙️ Urban',     value: 'URBAN'      },
+  { label: '🌾 Rural',     value: 'RURAL'      },
+  { label: '🏘️ Semi-Urban',value: 'SEMI_URBAN' },
+];
+const CATEGORY_OPTIONS   = [
+  { label: 'General',             value: 'GENERAL' },
+  { label: 'OBC',                 value: 'OBC'     },
+  { label: 'SC',                  value: 'SC'      },
+  { label: 'ST',                  value: 'ST'      },
+  { label: 'OBC (Non-Creamy)',     value: 'OBC_NCL' },
+  { label: 'EWS',                 value: 'EWS'     },
+];
+const OCCUPATION_OPTIONS = [
+  { label: 'Student',            value: 'STUDENT'           },
+  { label: 'Farmer',             value: 'FARMER'            },
+  { label: 'Salaried Employee',  value: 'SALARIED_EMPLOYEE' },
+  { label: 'Self-Employed',      value: 'SELF_EMPLOYED'     },
+  { label: 'Business Owner',     value: 'BUSINESS_OWNER'    },
+  { label: 'Daily Wage Worker',  value: 'DAILY_WAGE_WORKER' },
+  { label: 'Homemaker',          value: 'HOMEMAKER'         },
+  { label: 'Senior Citizen',     value: 'SENIOR_CITIZEN'    },
+  { label: 'Unemployed',         value: 'UNEMPLOYED'        },
+  { label: 'Other',              value: 'OTHER'             },
+];
+const INCOME_OPTIONS     = [
+  { label: 'Below ₹1 Lakh',  value: 'BELOW_1_LAKH'        },
+  { label: '₹1 – 3 Lakh',    value: 'BETWEEN_1_TO_3_LAKH' },
+  { label: '₹3 – 5 Lakh',    value: 'BETWEEN_3_TO_5_LAKH' },
+  { label: '₹5 – 10 Lakh',   value: 'BETWEEN_5_TO_10_LAKH'},
+  { label: 'Above ₹10 Lakh', value: 'ABOVE_10_LAKH'       },
+];
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type Stage = 'form' | 'otp' | 'done';
+// ─── Form type ────────────────────────────────────────────────────────────────
 
 type Form = {
-  name: string; email: string; password: string; confirmPassword: string;
-  gender: string; age: string; maritalStatus: string; residenceType: string;
-  state: string; category: string; disability: string; role: string;
-  bpl: string; annualIncome: string;
+  email: string; password: string; confirmPassword: string;
+  // personal
+  gender: string; age: string; maritalStatus: string;
+  // location
+  areaType: string; state: string;
+  // category & disability
+  socialCategory: string; isPwD: string;    // 'true' | 'false'
+  disabilityType: string; disabilityPercentage: string;
+  // economic
+  occupation: string; isBPL: string; annualIncome: string;
 };
+
+type Stage = 'form' | 'otp' | 'done';
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -50,34 +99,29 @@ const SectionHeader = ({ step, title, subtitle }: { step: number; title: string;
     </div>
   </div>
 );
-
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <label className="block font-['DM_Sans'] text-xs font-semibold text-[#0B2545]/60 mb-1.5 uppercase tracking-wider">
-    {children}
-  </label>
+  <label className="block font-['DM_Sans'] text-xs font-semibold text-[#0B2545]/60 mb-1.5 uppercase tracking-wider">{children}</label>
 );
-
 const ErrorMsg = ({ msg }: { msg?: string }) =>
   msg ? <p className="mt-1 text-xs text-red-500 font-['DM_Sans'] flex items-center gap-1">⚠ {msg}</p> : null;
 
-// ─── OTP stage ────────────────────────────────────────────────────────────────
+// ─── OTP Stage ────────────────────────────────────────────────────────────────
 
 interface OtpStageProps {
   email: string;
-  onVerified: () => void;
+  onVerified: (token: string) => void;
   onBack: () => void;
 }
 
 function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
-  const [otp, setOtp]         = useState(['', '', '', '', '', '']);
-  const [error, setError]     = useState('');
-  const [loading, setLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0); // seconds
-  const [resendMsg, setResendMsg] = useState('');
+  const [otp, setOtp]                       = useState(['', '', '', '', '', '']);
+  const [error, setError]                   = useState('');
+  const [loading, setLoading]               = useState(false);
+  const [resendLoading, setResendLoading]   = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendMsg, setResendMsg]           = useState('');
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Cooldown countdown
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const t = setTimeout(() => setResendCooldown(c => c - 1), 1000);
@@ -89,11 +133,9 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
     const next = [...otp]; next[idx] = digit; setOtp(next);
     if (digit && idx < 5) refs.current[idx + 1]?.focus();
   };
-
   const handleKey = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !otp[idx] && idx > 0) refs.current[idx - 1]?.focus();
   };
-
   const handlePaste = (e: React.ClipboardEvent) => {
     const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6).split('');
     if (!digits.length) return;
@@ -110,9 +152,10 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
     setError('');
     setLoading(true);
     try {
-      await apiVerifyOtp({ email, otp: code });
-      toast.success('Email verified! 🎉', { description: 'Your account has been created.' });
-      onVerified();
+      // /api/verify-otp returns { token, user }
+      const data = await apiVerifyOtp({ email, otp: code });
+      toast.success('Email verified! 🎉', { description: 'Account created successfully.' });
+      onVerified(data.token);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Invalid OTP. Please try again.';
       setError(msg);
@@ -126,12 +169,11 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
 
   const handleResend = async () => {
     if (resendCooldown > 0) return;
-    setResendMsg('');
-    setResendLoading(true);
+    setResendMsg(''); setResendLoading(true);
     try {
       await apiResendOtp(email);
       setResendMsg('A new code has been sent!');
-      toast.success('OTP resent', { description: `A new code was sent to ${email}` });
+      toast.success('OTP resent', { description: `A fresh code was sent to ${email}` });
       setResendCooldown(60);
       setOtp(['', '', '', '', '', '']);
       refs.current[0]?.focus();
@@ -146,14 +188,11 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 relative bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
-      {/* Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-8%] left-[-6%] w-[450px] h-[450px] bg-[#2E9F75]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-6%] w-[500px] h-[500px] bg-[#D94F20]/10 rounded-full blur-3xl" />
       </div>
-
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 group">
             <img src={logoImg} alt="SchemMe" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
@@ -164,125 +203,80 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
           className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-[#0B2545]/10 border border-[#E8D5B7]/60 p-8"
         >
-          {/* Icon */}
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#2E9F75]/15 to-[#1a7a52]/10 border border-[#2E9F75]/20 flex items-center justify-center shadow-inner">
               <Mail size={36} className="text-[#2E9F75]" />
             </div>
           </div>
-
-          <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold text-center mb-2">
-            Verify Your Email
-          </h2>
-          <p className="font-['DM_Sans'] text-[#0B2545]/55 text-sm text-center mb-1">
-            We've sent a 6‑digit code to
-          </p>
+          <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold text-center mb-2">Verify Your Email</h2>
+          <p className="font-['DM_Sans'] text-[#0B2545]/55 text-sm text-center mb-1">We've sent a 6‑digit code to</p>
           <p className="font-['DM_Sans'] text-[#2E9F75] text-sm font-bold text-center mb-7 truncate">{email}</p>
 
-          {/* OTP boxes */}
           <div className="flex justify-center gap-3 mb-3" onPaste={handlePaste}>
             {otp.map((digit, idx) => (
               <input
                 key={idx}
                 ref={el => { refs.current[idx] = el; }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
+                type="text" inputMode="numeric" maxLength={1}
                 value={digit}
                 onChange={e => handleChange(idx, e.target.value)}
                 onKeyDown={e => handleKey(idx, e)}
                 className={`w-12 h-14 text-center text-xl font-bold rounded-xl border-2 font-['DM_Sans'] focus:outline-none transition-all ${
-                  error
-                    ? 'border-red-400 bg-red-50 text-red-600'
-                    : digit
-                    ? 'border-[#2E9F75] bg-[#2E9F75]/5 text-[#0B2545]'
-                    : 'border-[#E8D5B7] bg-white/80 text-[#0B2545] focus:border-[#2E9F75] focus:ring-2 focus:ring-[#2E9F75]/25'
+                  error ? 'border-red-400 bg-red-50 text-red-600'
+                  : digit ? 'border-[#2E9F75] bg-[#2E9F75]/5 text-[#0B2545]'
+                  : 'border-[#E8D5B7] bg-white/80 text-[#0B2545] focus:border-[#2E9F75] focus:ring-2 focus:ring-[#2E9F75]/25'
                 }`}
               />
             ))}
           </div>
 
-          {/* Error */}
           <AnimatePresence>
             {error && (
-              <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="text-center text-xs text-red-500 font-['DM_Sans'] mb-4"
-              >
+              <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                className="text-center text-xs text-red-500 font-['DM_Sans'] mb-4">
                 ⚠ {error}
               </motion.p>
             )}
           </AnimatePresence>
 
-          {/* Submit */}
-          <button
-            id="otp-submit-btn"
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm mt-5 hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <CheckCircle2 size={17} />
-                Verify &amp; Create Account
-              </>
-            )}
+          <button id="otp-submit-btn" onClick={handleSubmit} disabled={loading}
+            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm mt-5 hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]">
+            {loading
+              ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              : <><CheckCircle2 size={17} /> Verify &amp; Activate Account</>}
           </button>
 
-          {/* Resend */}
           <div className="mt-5 text-center space-y-1">
             <p className="font-['DM_Sans'] text-[#0B2545]/45 text-xs">
-              {resendCooldown > 0
-                ? `Resend available in ${resendCooldown}s`
-                : "Didn't receive the code?"}
+              {resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Didn't receive the code?"}
             </p>
             {resendCooldown === 0 && (
-              <button
-                id="otp-resend-btn"
-                onClick={handleResend}
-                disabled={resendLoading}
-                className="inline-flex items-center gap-1.5 text-[#2E9F75] font-semibold text-xs hover:underline disabled:opacity-50 font-['DM_Sans']"
-              >
-                {resendLoading
-                  ? <><RefreshCw size={12} className="animate-spin" /> Sending…</>
-                  : <><RefreshCw size={12} /> Resend OTP</>}
+              <button id="otp-resend-btn" onClick={handleResend} disabled={resendLoading}
+                className="inline-flex items-center gap-1.5 text-[#2E9F75] font-semibold text-xs hover:underline disabled:opacity-50 font-['DM_Sans']">
+                {resendLoading ? <><RefreshCw size={12} className="animate-spin" /> Sending…</> : <><RefreshCw size={12} /> Resend OTP</>}
               </button>
             )}
             <AnimatePresence>
               {resendMsg && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className={`text-xs font-['DM_Sans'] ${resendMsg.includes('new') ? 'text-[#2E9F75]' : 'text-red-500'}`}
-                >
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className={`text-xs font-['DM_Sans'] ${resendMsg.includes('sent') ? 'text-[#2E9F75]' : 'text-red-500'}`}>
                   {resendMsg}
                 </motion.p>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Trust */}
           <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-[#0B2545]/40 font-['DM_Sans']">
             <ShieldCheck size={12} className="text-[#2E9F75]" />
             Your account is protected with email verification
           </div>
         </motion.div>
 
-        <button
-          id="otp-back-btn"
-          onClick={onBack}
-          className="mt-5 w-full text-center font-['DM_Sans'] text-sm text-[#0B2545]/45 hover:text-[#2E9F75] transition-colors"
-        >
+        <button id="otp-back-btn" onClick={onBack}
+          className="mt-5 w-full text-center font-['DM_Sans'] text-sm text-[#0B2545]/45 hover:text-[#2E9F75] transition-colors">
           ← Back to signup
         </button>
       </div>
@@ -290,21 +284,17 @@ function OtpStage({ email, onVerified, onBack }: OtpStageProps) {
   );
 }
 
-// ─── Done stage ───────────────────────────────────────────────────────────────
+// ─── Done Stage ───────────────────────────────────────────────────────────────
 
 function DoneStage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="text-center"
-      >
+      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2E9F75] to-[#1a7a52] flex items-center justify-center mx-auto mb-4 shadow-xl">
           <CheckCircle2 size={40} className="text-white" />
         </div>
         <h2 className="font-['Playfair_Display'] text-[#0B2545] text-2xl font-bold mb-2">Account Created!</h2>
-        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">Redirecting you to login…</p>
+        <p className="font-['DM_Sans'] text-[#0B2545]/50 text-sm">Redirecting to your dashboard…</p>
       </motion.div>
     </div>
   );
@@ -314,18 +304,20 @@ function DoneStage() {
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const { setPendingEmail, clearPendingEmail, pendingEmail } = useAuth();
+  const { login, setPendingEmail, clearPendingEmail, pendingEmail } = useAuth();
 
   const [showPass,    setShowPass]    = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [loading,     setLoading]     = useState(false);
   const [stage,       setStage]       = useState<Stage>('form');
   const [apiError,    setApiError]    = useState('');
 
   const [form, setForm] = useState<Form>({
-    name: '', email: pendingEmail, password: '', confirmPassword: '',
-    gender: '', age: '', maritalStatus: '', residenceType: '', state: '',
-    category: '', disability: '', role: '', bpl: '', annualIncome: '',
+    email: pendingEmail, password: '', confirmPassword: '',
+    gender: '', age: '', maritalStatus: '',
+    areaType: '', state: '',
+    socialCategory: '', isPwD: '',
+    disabilityType: '', disabilityPercentage: '',
+    occupation: '', isBPL: '', annualIncome: '',
   });
   const [errors, setErrors] = useState<Partial<Form>>({});
 
@@ -341,60 +333,91 @@ const SignupPage = () => {
   // ── Validation ──────────────────────────────────────────────────────────────
   const validate = (): Partial<Form> => {
     const e: Partial<Form> = {};
-    if (!form.name.trim())                                              e.name            = 'Enter your full name';
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-                                                                        e.email           = 'Enter a valid email address';
-    if (form.password.length < 6)                                       e.password        = 'Minimum 6 characters';
-    if (form.confirmPassword !== form.password)                         e.confirmPassword = 'Passwords do not match';
-    if (!form.gender)                                                   e.gender          = 'Select gender';
-    if (!form.age || isNaN(Number(form.age)) || +form.age < 1 || +form.age > 120)
-                                                                        e.age             = 'Enter a valid age';
-    if (!form.maritalStatus)  e.maritalStatus  = 'Select marital status';
-    if (!form.residenceType)  e.residenceType  = 'Select area type';
-    if (!form.state)          e.state          = 'Select your state';
-    if (!form.category)       e.category       = 'Select a category';
-    if (!form.disability)     e.disability     = 'Please select';
-    if (!form.role)           e.role           = 'Select your role';
-    if (!form.bpl)            e.bpl            = 'Please select';
-    if (!form.annualIncome)   e.annualIncome   = 'Select income range';
+                                               e.email              = 'Enter a valid email address';
+    if (form.password.length < 6)             e.password           = 'Minimum 6 characters';
+    if (form.confirmPassword !== form.password) e.confirmPassword   = 'Passwords do not match';
+    if (!form.gender)                          e.gender             = 'Select gender';
+    if (!form.age || isNaN(+form.age) || +form.age < 1 || +form.age > 120)
+                                               e.age                = 'Enter a valid age (1–120)';
+    if (!form.maritalStatus)                   e.maritalStatus      = 'Select marital status';
+    if (!form.areaType)                        e.areaType           = 'Select area type';
+    if (!form.state)                           e.state              = 'Select your state';
+    if (!form.socialCategory)                  e.socialCategory     = 'Select a category';
+    if (!form.isPwD)                           e.isPwD              = 'Please select';
+    if (!form.occupation)                      e.occupation         = 'Select occupation';
+    if (!form.isBPL)                           e.isBPL              = 'Please select';
+    if (!form.annualIncome)                    e.annualIncome       = 'Select income range';
     return e;
   };
 
-  // ── POST /api/signup ────────────────────────────────────────────────────────
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ── POST /api/signup ─────────────────────────────────────────────────────────
+  // Validate → jump to OTP stage immediately → call API in background
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setApiError('');
-    setLoading(true);
-    try {
-      await apiSignup({
-        name:     form.name.trim(),
-        email:    form.email.trim(),
-        password: form.password,
+
+    const email = form.email.trim();
+    const payload = {
+      email,
+      password:            form.password,
+      gender:              form.gender,
+      age:                 Number(form.age),
+      maritalStatus:       form.maritalStatus,
+      areaType:            form.areaType,
+      state:               form.state,
+      socialCategory:      form.socialCategory,
+      isPwD:               form.isPwD === 'true',
+      disabilityType:      form.isPwD === 'true' && form.disabilityType ? form.disabilityType : null,
+      disabilityPercentage: form.isPwD === 'true' && form.disabilityPercentage
+                             ? Number(form.disabilityPercentage) : null,
+      occupation:          form.occupation,
+      isBPL:               form.isBPL === 'true',
+      annualIncome:        form.annualIncome,
+    };
+
+    // ✅ Move to OTP page INSTANTLY — no waiting for network
+    setPendingEmail(email);
+    setStage('otp');
+
+    // 🔄 Call API in background; come back with error if it fails
+    apiSignup(payload)
+      .then(() => {
+        toast.info('OTP sent! 📧', { description: `Check your inbox at ${email}` });
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : 'Signup failed. Please try again.';
+        setApiError(msg);
+        toast.error('Signup failed', { description: msg });
+        setStage('form'); // bring user back to fix the error
       });
-      // Persist email so OTP stage has it even after a page refresh
-      setPendingEmail(form.email.trim());
-      toast.info('OTP sent! 📧', { description: `Check your inbox at ${form.email.trim()}` });
-      setStage('otp');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Signup failed. Please try again.';
-      setApiError(msg);
-      toast.error('Signup failed', { description: msg });
-    } finally {
-      setLoading(false);
-    }
   };
 
-  // ── After OTP verified ──────────────────────────────────────────────────────
-  const handleVerified = () => {
+  // ── After OTP verified — save token + redirect to dashboard ─────────────────
+  const handleVerified = (token: string) => {
+    // Save token to cookie + user to context
+    login(token, undefined);
+
+    // Decode JWT and compute personalised schemes
+    try {
+      const payload = JSON.parse(
+        decodeURIComponent(
+          atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+            .split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+        )
+      ) as Record<string, unknown>;
+      computeAndSavePersonalisedSchemes(payload);
+    } catch { /* non-critical */ }
+
     clearPendingEmail();
     setStage('done');
-    setTimeout(() => navigate('/login'), 1800);
+    setTimeout(() => navigate('/dashboard', { replace: true }), 1200);
   };
 
-  // ── Class helpers ───────────────────────────────────────────────────────────
+  // ── CSS helpers ─────────────────────────────────────────────────────────────
   const inputCls = (field: keyof Form) =>
     `w-full px-4 py-3 rounded-xl border font-['DM_Sans'] text-sm focus:outline-none focus:ring-2 transition-all ${
       errors[field]
@@ -418,10 +441,9 @@ const SignupPage = () => {
         : 'border-[#E8D5B7] bg-white/80 text-[#0B2545]/60 hover:border-[#2E9F75] hover:text-[#2E9F75]'
     }`;
 
-  // ── Stage routing ───────────────────────────────────────────────────────────
+  // ── Route stages ────────────────────────────────────────────────────────────
   if (stage === 'done') return <DoneStage />;
-
-  if (stage === 'otp') return (
+  if (stage === 'otp')  return (
     <OtpStage
       email={form.email.trim() || pendingEmail}
       onVerified={handleVerified}
@@ -432,7 +454,6 @@ const SignupPage = () => {
   // ── Form stage ──────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col items-center justify-start px-4 py-16 relative bg-gradient-to-br from-[#FFF9F0] via-[#F0FDF4] to-[#FEF3E2]">
-      {/* Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-8%] left-[-6%] w-[450px] h-[450px] bg-[#2E9F75]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-6%] w-[500px] h-[500px] bg-[#D94F20]/10 rounded-full blur-3xl" />
@@ -456,32 +477,17 @@ const SignupPage = () => {
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
           {/* ── Block 1: Account Credentials ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7"
-          >
-            <SectionHeader step={1} title="Account Credentials" subtitle="Enter your email address and a strong password" />
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7">
+            <SectionHeader step={1} title="Account Credentials" subtitle="Your email and a strong password" />
             <div className="space-y-4">
-              {/* Full Name */}
-              <div>
-                <Label>Full Name</Label>
-                <div className="relative">
-                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0B2545]/30" />
-                  <input id="signup-name" type="text" placeholder="e.g. Rahul Sharma"
-                    value={form.name} onChange={set('name')}
-                    className={`${inputCls('name')} pl-10`} />
-                </div>
-                <ErrorMsg msg={errors.name} />
-              </div>
-
               {/* Email */}
               <div>
                 <Label>Email Address</Label>
                 <div className="relative">
                   <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0B2545]/30" />
                   <input id="signup-email" type="email" placeholder="e.g. rahul@example.com"
-                    autoComplete="email"
-                    value={form.email}
+                    autoComplete="email" value={form.email}
                     onChange={e => { set('email')(e); setErrors(p => ({ ...p, email: '' })); }}
                     className={`${inputCls('email')} pl-10`} />
                 </div>
@@ -506,7 +512,7 @@ const SignupPage = () => {
                   <ErrorMsg msg={errors.password} />
                 </div>
                 <div>
-                  <Label>Verify Password</Label>
+                  <Label>Confirm Password</Label>
                   <div className="relative">
                     <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0B2545]/30" />
                     <input id="signup-confirm-password" type={showConfirm ? 'text' : 'password'}
@@ -525,22 +531,19 @@ const SignupPage = () => {
           </motion.div>
 
           {/* ── Block 2: Personal Details ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08 }}
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7"
-          >
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.08 }}
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7">
             <SectionHeader step={2} title="Personal Details" subtitle="Tell us about yourself" />
             <div className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <Label>Gender</Label>
                   <div className="flex flex-wrap gap-2">
-                    {['Male','Female','Non-Binary','Prefer not to say'].map(g => (
-                      <button key={g} type="button"
-                        id={`gender-${g.toLowerCase().replace(/\s+/g,'-')}`}
-                        onClick={() => pick('gender', g)}
-                        className={chipCls(form.gender === g, errors.gender)}>
-                        {g}
+                    {GENDER_OPTIONS.map(g => (
+                      <button key={g.value} type="button" id={`gender-${g.value.toLowerCase()}`}
+                        onClick={() => pick('gender', g.value)}
+                        className={chipCls(form.gender === g.value, errors.gender)}>
+                        {g.label}
                       </button>
                     ))}
                   </div>
@@ -558,12 +561,11 @@ const SignupPage = () => {
               <div>
                 <Label>Marital Status</Label>
                 <div className="flex flex-wrap gap-2">
-                  {['Single','Married','Divorced','Widowed'].map(m => (
-                    <button key={m} type="button"
-                      id={`marital-${m.toLowerCase()}`}
-                      onClick={() => pick('maritalStatus', m)}
-                      className={chipCls(form.maritalStatus === m, errors.maritalStatus)}>
-                      {m}
+                  {MARITAL_OPTIONS.map(m => (
+                    <button key={m.value} type="button" id={`marital-${m.value.toLowerCase()}`}
+                      onClick={() => pick('maritalStatus', m.value)}
+                      className={chipCls(form.maritalStatus === m.value, errors.maritalStatus)}>
+                      {m.label}
                     </button>
                   ))}
                 </div>
@@ -573,32 +575,28 @@ const SignupPage = () => {
           </motion.div>
 
           {/* ── Block 3: Location ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.16 }}
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7"
-          >
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.16 }}
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7">
             <SectionHeader step={3} title="Location" subtitle="Your state and area of residence" />
             <div className="space-y-5">
               <div>
                 <Label>Area Type</Label>
                 <div className="flex gap-3 flex-wrap">
-                  {(['Urban','Rural','Semi-Urban'] as const).map(r => (
-                    <button key={r} type="button"
-                      id={`area-${r.toLowerCase()}`}
-                      onClick={() => pick('residenceType', r)}
-                      className={chipCls(form.residenceType === r, errors.residenceType)}>
-                      {r === 'Urban' ? '🏙️' : r === 'Rural' ? '🌾' : '🏘️'} {r}
+                  {AREA_OPTIONS.map(a => (
+                    <button key={a.value} type="button" id={`area-${a.value.toLowerCase()}`}
+                      onClick={() => pick('areaType', a.value)}
+                      className={chipCls(form.areaType === a.value, errors.areaType)}>
+                      {a.label}
                     </button>
                   ))}
                 </div>
-                <ErrorMsg msg={errors.residenceType} />
+                <ErrorMsg msg={errors.areaType} />
               </div>
 
               <div>
                 <Label>State / UT of Residence</Label>
                 <div className="relative">
-                  <select id="signup-state" value={form.state} onChange={set('state')}
-                    className={selectCls('state')}>
+                  <select id="signup-state" value={form.state} onChange={set('state')} className={selectCls('state')}>
                     <option value="">— Select State / UT —</option>
                     {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -610,88 +608,102 @@ const SignupPage = () => {
           </motion.div>
 
           {/* ── Block 4: Category & Disability ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.24 }}
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7"
-          >
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.24 }}
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7">
             <SectionHeader step={4} title="Category & Disability" subtitle="Used to match relevant government schemes" />
             <div className="space-y-5">
               <div>
                 <Label>Social Category</Label>
                 <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map(c => (
-                    <button key={c} type="button"
-                      id={`category-${c.toLowerCase().replace(/\s+/g,'-')}`}
-                      onClick={() => pick('category', c)}
-                      className={chipCls(form.category === c, errors.category)}>
-                      {c}
+                  {CATEGORY_OPTIONS.map(c => (
+                    <button key={c.value} type="button" id={`category-${c.value.toLowerCase()}`}
+                      onClick={() => pick('socialCategory', c.value)}
+                      className={chipCls(form.socialCategory === c.value, errors.socialCategory)}>
+                      {c.label}
                     </button>
                   ))}
                 </div>
-                <ErrorMsg msg={errors.category} />
+                <ErrorMsg msg={errors.socialCategory} />
               </div>
 
               <div>
                 <Label>Person with Disability (PwD)?</Label>
                 <div className="flex gap-3">
-                  {['Yes','No'].map(val => (
-                    <button key={val} type="button"
-                      id={`disability-${val.toLowerCase()}`}
-                      onClick={() => pick('disability', val)}
-                      className={chipCls(form.disability === val, errors.disability)}>
-                      {val === 'Yes' ? '✓' : '✗'} {val}
+                  {[{ label: '✓ Yes', value: 'true' }, { label: '✗ No', value: 'false' }].map(v => (
+                    <button key={v.value} type="button" id={`pwd-${v.value}`}
+                      onClick={() => pick('isPwD', v.value)}
+                      className={chipCls(form.isPwD === v.value, errors.isPwD)}>
+                      {v.label}
                     </button>
                   ))}
                 </div>
-                <ErrorMsg msg={errors.disability} />
+                <ErrorMsg msg={errors.isPwD} />
               </div>
+
+              {/* Conditional disability fields */}
+              <AnimatePresence>
+                {form.isPwD === 'true' && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-hidden">
+                    <div>
+                      <Label>Disability Type</Label>
+                      <input id="signup-disability-type" type="text" placeholder="e.g. Visual Impairment"
+                        value={form.disabilityType} onChange={set('disabilityType')}
+                        className={inputCls('disabilityType')} />
+                    </div>
+                    <div>
+                      <Label>Disability % (if known)</Label>
+                      <input id="signup-disability-pct" type="number" min={0} max={100}
+                        placeholder="e.g. 40" value={form.disabilityPercentage} onChange={set('disabilityPercentage')}
+                        className={inputCls('disabilityPercentage')} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 
           {/* ── Block 5: Economic Profile ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.32 }}
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7"
-          >
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.32 }}
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-lg shadow-[#0B2545]/8 border border-[#E8D5B7]/60 p-7">
             <SectionHeader step={5} title="Economic Profile" subtitle="Helps us find financial assistance schemes" />
             <div className="space-y-5">
               <div>
-                <Label>Your Role / Occupation</Label>
+                <Label>Occupation</Label>
                 <div className="flex flex-wrap gap-2">
-                  {ROLES.map(r => (
-                    <button key={r} type="button"
-                      id={`role-${r.toLowerCase().replace(/\s+/g,'-')}`}
-                      onClick={() => pick('role', r)}
-                      className={chipCls(form.role === r, errors.role)}>
-                      {r}
+                  {OCCUPATION_OPTIONS.map(o => (
+                    <button key={o.value} type="button" id={`occupation-${o.value.toLowerCase()}`}
+                      onClick={() => pick('occupation', o.value)}
+                      className={chipCls(form.occupation === o.value, errors.occupation)}>
+                      {o.label}
                     </button>
                   ))}
                 </div>
-                <ErrorMsg msg={errors.role} />
+                <ErrorMsg msg={errors.occupation} />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <Label>BPL (Below Poverty Line) Card?</Label>
                   <div className="flex gap-3">
-                    {['Yes','No'].map(val => (
-                      <button key={val} type="button"
-                        id={`bpl-${val.toLowerCase()}`}
-                        onClick={() => pick('bpl', val)}
-                        className={chipCls(form.bpl === val, errors.bpl)}>
-                        {val}
+                    {[{ label: '✓ Yes', value: 'true' }, { label: '✗ No', value: 'false' }].map(v => (
+                      <button key={v.value} type="button" id={`bpl-${v.value}`}
+                        onClick={() => pick('isBPL', v.value)}
+                        className={chipCls(form.isBPL === v.value, errors.isBPL)}>
+                        {v.label}
                       </button>
                     ))}
                   </div>
-                  <ErrorMsg msg={errors.bpl} />
+                  <ErrorMsg msg={errors.isBPL} />
                 </div>
+
                 <div>
                   <Label>Annual Household Income</Label>
                   <div className="relative">
                     <select id="signup-annual-income" value={form.annualIncome} onChange={set('annualIncome')}
                       className={selectCls('annualIncome')}>
                       <option value="">— Select Range —</option>
-                      {INCOME_RANGES.map(i => <option key={i} value={i}>{i}</option>)}
+                      {INCOME_OPTIONS.map(i => <option key={i.value} value={i.value}>{i.label}</option>)}
                     </select>
                     <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#0B2545]/40 pointer-events-none" />
                   </div>
@@ -704,27 +716,19 @@ const SignupPage = () => {
           {/* ── API Error ── */}
           <AnimatePresence>
             {apiError && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold px-4 py-3 rounded-2xl font-['DM_Sans']"
-              >
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold px-4 py-3 rounded-2xl font-['DM_Sans']">
                 ⚠ {apiError}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* ── Submit row ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}
-            className="space-y-3"
-          >
-            <button type="submit" id="signup-submit-btn" disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all disabled:opacity-70 active:scale-[0.98]">
-              {loading
-                ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                : <><UserPlus size={17} /> Create My Account</>}
+          {/* ── Submit ── */}
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.4 }}
+            className="space-y-3">
+            <button type="submit" id="signup-submit-btn"
+              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#D94F20] to-[#b83a15] text-white py-4 rounded-2xl font-['DM_Sans'] font-bold text-sm hover:shadow-xl hover:shadow-[#D94F20]/30 transition-all active:scale-[0.98]">
+              <UserPlus size={17} /> Create My Account
             </button>
 
             <button type="button" id="signup-login-btn" onClick={() => navigate('/login')}

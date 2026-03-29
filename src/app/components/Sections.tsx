@@ -337,7 +337,7 @@ export const Navbar = () => {
                 {user?.name ? user.name.charAt(0).toUpperCase() : <UserCircle size={14} />}
               </div>
               <span className="hidden sm:inline whitespace-nowrap max-w-[80px] truncate">
-                {user?.name?.split(' ')[0] ?? 'Account'}
+                {user?.name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Account'}
               </span>
               <ChevronDown size={12} className={`hidden sm:block text-white/60 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
             </button>

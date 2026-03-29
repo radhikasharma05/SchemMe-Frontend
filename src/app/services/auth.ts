@@ -3,41 +3,57 @@
 
 export const API_BASE = 'http://192.168.137.1:3000/api';
 
-// ─── Response types ────────────────────────────────────────────────────────────
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
+/** Full signup payload — matches every field in the Prisma User model */
 export interface SignupPayload {
-  name: string;
-  email: string;
-  password: string;
+  email:               string;
+  password:            string;
+
+  // Personal
+  gender:              string;   // MALE | FEMALE | NON_BINARY | PREFER_NOT_TO_SAY
+  age:                 number;
+  maritalStatus:       string;   // SINGLE | MARRIED | DIVORCED | WIDOWED
+
+  // Location
+  areaType:            string;   // URBAN | RURAL | SEMI_URBAN
+  state:               string;
+
+  // Category & Disability
+  socialCategory:      string;   // GENERAL | OBC | SC | ST | OBC_NCL | EWS
+  isPwD:               boolean;
+  disabilityType?:     string | null;
+  disabilityPercentage?: number | null;
+
+  // Economic
+  occupation:          string;   // STUDENT | FARMER | SALARIED_EMPLOYEE | …
+  isBPL:               boolean;
+  annualIncome:        string;   // BELOW_1_LAKH | BETWEEN_1_TO_3_LAKH | …
 }
 
 export interface VerifyOtpPayload {
   email: string;
-  otp: string;
+  otp:   string;
 }
 
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
+/** Both /api/verify-otp and /api/login return this shape */
+export interface AuthResponse {
+  token:    string;
   user?: {
-    id: string | number;
-    name: string;
+    id:    string | number;
     email: string;
+    name?: string;
     [key: string]: unknown;
   };
   message?: string;
 }
 
-export interface ApiError {
-  message: string;
-  statusCode: number;
+export interface LoginPayload {
+  email:    string;
+  password: string;
 }
 
-// ─── Helper ────────────────────────────────────────────────────────────────────
+// ─── Error helper ──────────────────────────────────────────────────────────────
 
 async function extractError(res: Response): Promise<string> {
   try {
@@ -49,50 +65,51 @@ async function extractError(res: Response): Promise<string> {
 }
 
 // ─── Signup ────────────────────────────────────────────────────────────────────
-// POST /api/signup → triggers OTP email, expects 200/201 on success.
+// POST /api/signup → sends full profile, triggers OTP email
 
 export async function apiSignup(payload: SignupPayload): Promise<void> {
   const res = await fetch(`${API_BASE}/signup`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body:    JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await extractError(res));
 }
 
 // ─── Verify OTP ────────────────────────────────────────────────────────────────
-// POST /api/verify-otp → verifies the 6-digit code; creates the account.
+// POST /api/verify-otp → verifies 6-digit code, returns JWT + user on success
 
-export async function apiVerifyOtp(payload: VerifyOtpPayload): Promise<void> {
+export async function apiVerifyOtp(payload: VerifyOtpPayload): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE}/verify-otp`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body:    JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await extractError(res));
+  return res.json() as Promise<AuthResponse>;
 }
 
 // ─── Resend OTP ────────────────────────────────────────────────────────────────
-// POST /api/resend-otp → sends a fresh OTP to the same email.
+// POST /api/resend-otp → sends a fresh OTP to the same email
 
 export async function apiResendOtp(email: string): Promise<void> {
   const res = await fetch(`${API_BASE}/resend-otp`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body:    JSON.stringify({ email }),
   });
   if (!res.ok) throw new Error(await extractError(res));
 }
 
 // ─── Login ─────────────────────────────────────────────────────────────────────
-// POST /api/login → returns JWT token + user info on success.
+// POST /api/login → returns JWT token + user info on success
 
-export async function apiLogin(payload: LoginPayload): Promise<LoginResponse> {
+export async function apiLogin(payload: LoginPayload): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE}/login`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body:    JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
+  return res.json() as Promise<AuthResponse>;
 }

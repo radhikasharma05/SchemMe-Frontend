@@ -6,6 +6,7 @@ import logoImg from '../../assets/logo.png';
 import { apiLogin } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { computeAndSavePersonalisedSchemes } from '../utils/matchSchemes';
 
 // ─── LoginPage ─────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,18 @@ const LoginPage = () => {
     try {
       const data = await apiLogin({ email: form.email.trim(), password: form.password });
       login(data.token, data.user);
+
+      // Decode JWT payload and run personalised scheme matching
+      try {
+        const payload = JSON.parse(
+          decodeURIComponent(
+            atob(data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+              .split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+          )
+        ) as Record<string, unknown>;
+        computeAndSavePersonalisedSchemes(payload);
+      } catch { /* non-critical */ }
+
       setSuccess(true);
       toast.success('Welcome back! 🎉', { description: `Logged in as ${form.email.trim()}` });
       setTimeout(() => navigate(from, { replace: true }), 900);
